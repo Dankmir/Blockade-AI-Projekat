@@ -11,9 +11,16 @@ class Board:
         for i in range(self.height):
             self.nodes.append([])
             for j in range(self.width):
-                self.nodes[i].append(Node(i, j, '    |' if i % 2 == 0 else '---  ')) 
+                self.nodes[i].append(Node(i, j, '   |' if i % 2 == 0 else '--- ')) 
                 
 
     def draw(self):
+        print(*['  ===' if i == 0 else '===' for i in range(self.width)])
         for i in range(self.height):
-                print(*[x.s for x in self.nodes[i]]) #f'({self.nodes[i][j].x}, {self.nodes[i][j].y})'
+                l = [x.s for x in self.nodes[i]]
+                if i < self.height - 1:
+                    l.insert(0, '||')
+                    l.pop()
+                    l.append('   ||' if i % 2 == 0 else '---||')
+                    print(*l, sep='')
+        print(*['  ===' if i == 0 else '===' for i in range(self.width)])
