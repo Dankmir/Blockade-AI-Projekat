@@ -1,9 +1,11 @@
 from Node import Node
+from Player import Player
 
 class Board:
     symbols = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R' ]
 
     def __init__(self, w, h):
+        self.players = [Player('X', 2, 4), Player('O', 6, 6)]
         self.width = w 
         self.height = h * 2
         self.nodes = []
@@ -36,6 +38,9 @@ class Board:
                         counter += 1
 
         print(*['  ╚═══' if i == 0 else '═══' if i > 0 and i < self.width-1 else '═══╝' for i in range(self.width)], sep='╧')
+
+    def placePlayer(self, x, y, player):
+        self.nodes[y * 2][x].s = f' {self.players[player].symbol} │'
 
     def placeWallHorizontal(self, x, y):
         vX = y*2
