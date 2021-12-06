@@ -220,4 +220,16 @@ play(["O", 1], [1, 5], ["P", 4, 5], firstO, blockade, n)
 from Board import Board
 
 b = Board(11, 14)
+
+b.placeWallHorizontal(1, 0)
+b.placeWallHorizontal(2, 0)
+b.placeWallHorizontal(3, 0)
+
+b.placeWallVertical(4, 1)
+b.placeWallVertical(4, 2)
+b.placeWallVertical(4, 3)
+
+b.placeWallHorizontal(5, 2)
+
+
 b.draw()
