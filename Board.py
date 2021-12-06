@@ -60,7 +60,6 @@ class Board:
         self.nodes[x1][y1].s = '━━━┼'
         self.nodes[x1][y1].hasWall = True
         self.nodes[x2][y2].s = '━━━┼'
-        self.nodes[x2][y2].hasWall = False
         #self.draw()
 
     def placeWallVertical(self, x, y):
@@ -86,5 +85,4 @@ class Board:
         self.nodes[x1][y1].s = '   ┇'
         self.nodes[x1][y1].hasWall = True
         self.nodes[x2][y2].s = '   ┇'
-        self.nodes[x2][y2].hasWall = True
         #self.draw()
