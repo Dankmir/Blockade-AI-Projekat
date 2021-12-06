@@ -221,15 +221,14 @@ from Board import Board
 
 b = Board(11, 14)
 
-b.placeWallHorizontal(1, 0)
-b.placeWallHorizontal(2, 0)
-b.placeWallHorizontal(3, 0)
+b.placeWallHorizontal(0, 0)
+b.placeWallHorizontal(9, 0)
+b.placeWallHorizontal(0, 12)
+b.placeWallHorizontal(9, 12)
 
-b.placeWallVertical(4, 1)
-b.placeWallVertical(4, 2)
-b.placeWallVertical(4, 3)
-
-b.placeWallHorizontal(5, 2)
-
+b.placeWallVertical(1, 1)
+b.placeWallVertical(8, 1)
+b.placeWallVertical(1, 11)
+b.placeWallVertical(8, 11)
 
 b.draw()

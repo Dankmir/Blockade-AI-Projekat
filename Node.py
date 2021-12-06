@@ -3,6 +3,7 @@ class Node:
         self.x = x
         self.y = y
         self.s = s
+        self.hasWall = False
         self.neighbors = list()
 
     def addNeighbor(self, neighbor):
