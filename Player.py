@@ -1,40 +1,38 @@
 class Player:
-    def __init__(self, symbol, p1x, p1y, p2x, p2y):
+    def __init__(self, symbol, x, y):
         self.symbol = symbol
-        self.positions = [[p1x, p1y], [p2x, p2y]]
+        self.x = x
+        self.y = y
         self.walls = 0
 
-    def setPlayerPos(self, x, y, id):
-        if id == 0:
-            self.positions[0][0] = x
-            self.positions[0][1] = y
-        elif id == 1:
-            self.positions[1][0] = x
-            self.positions[1][1] = y
+    def setPlayerPos(self, x, y):
+            self.x = x
+            self.y = y
 
-    def move(self, dir, distance, id, boardWidth, boardHeight):
+    def move(self, dir, distance, boardWidth, boardHeight):
         if distance <= 0 or distance > 2:
             print("INVALID DISTANCE")
             return False
-        prevPos = self.positions[id].copy()
+        prevX = self.x
+        prevY = self.y
 
         if dir == 0:
-            self.positions[id][0] += distance
+            self.x += distance
         elif dir == 1:
-            self.positions[id][1] += distance
+            self.y += distance
         elif dir == 2:
-            self.positions[id][0] -= distance
+            self.x -= distance
         elif dir == 3:
-            self.positions[id][1] -= distance
+            self.y -= distance
 
-        if self.validateMove(self.positions[id][0], self.positions[id][1], boardWidth, boardHeight) == False:
-            self.positions[id] = prevPos.copy()
+        if self.validateMove(self.x, self.y, boardWidth, boardHeight) == False:
+            self.x = prevX  
+            self.y = prevY 
             return False
-
         return True
 
     def validateMove(self, x, y, boardWidth, boardHeight):
-        if x >= boardWidth or x < 0 or y * 2 >= boardHeight or y < 0:
+        if x * 2 >= boardHeight or x < 0 or y >= boardWidth or y < 0:
             print("INVALID MOVE")
             return False
         return True
