@@ -5,7 +5,7 @@ class Board:
     symbols = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R' ]
 
     def __init__(self, w, h):
-        self.players = [Player('X', 2, 4), Player('O', 6, 6)]
+        self.players = [Player('X', 3, 3, 7, 3), Player('O', 3, 10, 7, 10)]
         self.width = w 
         self.height = h * 2
         self.nodes = []
@@ -17,6 +17,7 @@ class Board:
                 
 
     def draw(self):
+        self.placePlayers()
         top = [f'  {self.symbols[i]} ' for i in range(self.width)]
         top.insert(0, '  ')
         print(*top, sep='')
@@ -27,8 +28,9 @@ class Board:
                 l = [x.s for x in self.nodes[i]]
                 if i < self.height - 1:
                     l.insert(0, f'{self.symbols[counter]} ║' if i % 2 == 0 else '  ╟')
-                    l.pop()
-                    last = '   ║' if i % 2 == 0 else '───╢'
+                    ll = l.pop()
+                    ll = ll.replace('│', '║')
+                    last = '   ║' if ll == '   │' else ll if i % 2 == 0 else '───╢'
                     if l[len(self.nodes[i]) - 1] == '━━━┼':
                         last = '━━━╢';
                     l.append(last)
@@ -39,8 +41,18 @@ class Board:
 
         print(*['  ╚═══' if i == 0 else '═══' if i > 0 and i < self.width-1 else '═══╝' for i in range(self.width)], sep='╧')
 
-    def placePlayer(self, x, y, player):
-        self.nodes[y * 2][x].s = f' {self.players[player].symbol} │'
+    def placePlayers(self):
+        for p in self.players:
+            for pos in p.positions:
+                x = pos[1] * 2
+                y = pos[0]
+                self.nodes[x][y].s = f' {p.symbol} │'
+
+    def movePlayer(self, dir, distance, player, id):
+        prevX = self.players[player].positions[id][1] * 2
+        prevY = self.players[player].positions[id][0]
+        if self.players[player].move(dir, distance, id, self.width, self.height):
+            self.nodes[prevX][prevY].s = '   │'
 
     def placeWallHorizontal(self, x, y):
         vX = y*2

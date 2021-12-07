@@ -231,10 +231,11 @@ b.placeWallVertical(8, 1)
 b.placeWallVertical(1, 11)
 b.placeWallVertical(8, 11)
 
-b.placePlayer(3, 3, 0)
-b.placePlayer(7, 3, 0)
 
-b.placePlayer(3, 10, 1)
-b.placePlayer(7, 10, 1)
+b.draw()
+b.movePlayer(0, 2, 0, 0)
+b.movePlayer(0, 2, 0, 0)
+b.movePlayer(0, 0, 0, 0)
+b.movePlayer(0, 0, 0, 0)
 
 b.draw()
