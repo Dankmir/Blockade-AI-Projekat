@@ -6,7 +6,7 @@ class Board:
     symbols = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R' ]
 
     def __init__(self, w, h):
-        self.players = [Player('X', 3, 3), Player('X', 3, 7), Player('O', 10, 3), Player('O', 10, 7)]
+        self.players = [Player('X', 3, 3, self), Player('X', 3, 7, self), Player('O', 10, 3, self), Player('O', 10, 7, self)]
         init()
         self.width = w 
         self.height = h * 2
@@ -17,7 +17,7 @@ class Board:
             for j in range(self.width):
                 self.nodes[i].append(Node(i, j))
 
-    
+
     def draw(self):
         c = 0
         print('    ', end='')
@@ -41,7 +41,7 @@ class Board:
         return '   '
 
     def movePlayer(self, dir, distance, player):
-        self.players[player].move(dir, distance, self.width, self.height, self.players, self.nodes)
+        self.players[player].move(dir, distance, self.width, self.height)
         
     def placeWallHorizontal(self, x, y):
         vX1 = y*2
