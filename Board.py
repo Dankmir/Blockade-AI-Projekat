@@ -49,7 +49,7 @@ class Board:
         vX2 = y*2 + 2
         vY2 = x
 
-        if (self.nodes[vX1][vY1].hasWall and self.nodes[vX2][vY2].hasWall):
+        if (self.nodes[vX1][vY1].hasWall and self.nodes[vX2][vY2].hasWall or self.nodes[y + 1][x].hasWall):
             print("THERE IS ALREADY WALL")
             return
 

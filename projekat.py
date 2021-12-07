@@ -7,6 +7,12 @@ b.placeWallVertical(6, 9)
 b.placeWallHorizontal(7, 9)
 b.placeWallHorizontal(5, 10)
 
+b.placeWallHorizontal(0, 0)
+b.placeWallHorizontal(1, 0)
+
+b.placeWallHorizontal(1, 2)
+b.placeWallHorizontal(0, 2)
+
 b.draw()
 
 b.movePlayer(1, 1, 3)
