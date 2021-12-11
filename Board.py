@@ -3,13 +3,15 @@ from Player import Player
 from colorama import *
 
 class Board:
-    symbols = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R' ]
+    symbols = ['1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S' ]
 
     def __init__(self, w, h):
         self.players = [Player('X', 3, 3, self), Player('X', 3, 7, self), Player('O', 10, 3, self), Player('O', 10, 7, self)]
         init()
         self.width = w 
         self.height = h * 2
+        self.startNodes = [[], [], [], []]
+        self.walls = [[], []]
         self.nodes = []
 
         for i in range(self.height):
@@ -49,17 +51,17 @@ class Board:
         vX2 = y*2 + 2
         vY2 = x
 
-        if (self.nodes[vX1][vY1].hasWall and self.nodes[vX2][vY2].hasWall or self.nodes[y + 1][x].hasWall):
-            print("THERE IS ALREADY WALL")
-            return
+        if (self.nodes[vX1][vY1].hasWall and self.nodes[vX2][vY2].hasWall or self.nodes[y + 1][x].hasWall or self.nodes[y + 1][x + 1].hasWall):
+            print("[Horizontal Wall] THERE IS ALREADY WALL")
+            return False
 
         if x > self.width - 2:
             print("HORIZONTAL WALL X OVERFLOW.") 
-            return
+            return False
 
         if y*2 > self.height - 3:
             print("HORIZONTAL WALL Y OVERFLOW.") 
-            return
+            return False
 
         x1 = y*2 + 1
         y1 = x
@@ -67,7 +69,8 @@ class Board:
         y2 = x + 1  
         self.nodes[x1][y1].hasWall = True
         self.nodes[x2][y2].hasWall = True
-        #self.draw()
+
+        return True
 
     def placeWallVertical(self, x, y):
         hX1 = y*2 + 1 
@@ -76,16 +79,16 @@ class Board:
         hY2 = x + 1
 
         if (self.nodes[hX1][hY1].hasWall and self.nodes[hX2][hY2].hasWall):
-            print("THERE IS ALREADY WALL")
-            return
+            print("[Vertical Wall] THERE IS ALREADY WALL")
+            return False
 
         if x > self.width - 2:
             print("VERTICAL WALL X OVERFLOW.") 
-            return
+            return False
 
         if y*2 > self.height - 3:
             print("VERTICAL WALL Y OVERFLOW.") 
-            return
+            return False
 
         x1 = y*2
         y1 = x
@@ -93,4 +96,17 @@ class Board:
         y2 = x 
         self.nodes[x1][y1].hasWall = True
         self.nodes[x2][y2].hasWall = True
-        #self.draw()
+
+        return True
+
+    def playTurn(self, player, pawn, dir, steps, wallColor, wallX, wallY):
+        playerMoved = self.movePlayer(dir, steps, (0 if player == 'X' else 2) + pawn-1)
+        
+        wallPlaced = False
+        if wallColor == 'G':
+            wallPlaced = self.placeWallVertical(wallX - 1, wallY - 1)
+        elif wallColor == 'B':
+            wallPlaced = self.placeWallHorizontal(wallX - 1, wallY - 1)
+
+        if not wallPlaced and playerMoved:
+            self.movePlayer(10 - dir, steps, player[(0 if player == 'X' else 2) + pawn-1])

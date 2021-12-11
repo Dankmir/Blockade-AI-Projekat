@@ -16,6 +16,7 @@ class Player:
         if distance <= 0 or distance > 2:
             print("INVALID DISTANCE")
             return False
+            
         tempX = self.x
         tempY = self.y
 

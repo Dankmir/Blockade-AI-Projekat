@@ -2,29 +2,20 @@ from Board import Board
 
 b = Board(11, 14)
 
-b.placeWallVertical(7, 10)
-b.placeWallVertical(6, 9)
-b.placeWallHorizontal(7, 9)
-b.placeWallHorizontal(5, 10)
+b.draw()
 
-b.placeWallHorizontal(0, 0)
-b.placeWallHorizontal(1, 0)
-
-b.placeWallHorizontal(1, 2)
-b.placeWallHorizontal(0, 2)
+b.playTurn('X', 1, 8, 2, 'B', 4, 3)
+b.playTurn('X', 1, 2, 1, 'B', 1, 1)
 
 b.draw()
 
-b.movePlayer(1, 1, 3)
-b.movePlayer(4, 1, 3)
-b.movePlayer(7, 1, 3)
-# b.movePlayer(7, 1, 3)
-# b.movePlayer(9, 1, 3)
-# b.movePlayer(3, 1, 3)
 
-# b.movePlayer(1, 2, 3)
-# b.movePlayer(7, 2, 3)
-# b.movePlayer(9, 2, 3)
-# b.movePlayer(3, 2, 3)
-
-b.draw()
+'''
+- Postavljanje zidova (da ne mogu da budu tri u nizu, za horizontalne radi, treba za vertikalne)
+- Postavljanje zida (onaj slucaj sa discorda sto sam slao)
+- Inicializacija table na pocetku (da unosimo parametre)
+- Da se pamti broz zidova po igracu
+- Da se pamte pocetne pozicija i da se doda provera da li je igrac stigao na pocetnu poziciju protivnika
+- Provera da zidovi ne mogu da se postave oko pocetnih polja
+- Provera da li igrac ima zidove
+'''

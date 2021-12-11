@@ -5,6 +5,7 @@ class Node:
         self.x = x
         self.y = y
         self.hasWall = False
+        self.hasPlayer = False
         self.neighbors = list()
 
     def addNeighbor(self, neighbor):
