@@ -95,3 +95,9 @@ class Player:
             print("INVALID MOVE")
             return False
         return True
+
+    def checkForEnd(self, nodes):
+        for n in nodes:
+            if n[0] == self.x and n[1] == self.y:
+                return True
+        return False

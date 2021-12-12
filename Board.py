@@ -5,13 +5,13 @@ from colorama import *
 class Board:
     symbols = ['1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S' ]
 
-    def __init__(self, w, h):
-        self.players = [Player('X', 3, 3, self), Player('X', 3, 7, self), Player('O', 10, 3, self), Player('O', 10, 7, self)]
+    def __init__(self, w, h, x1, y1, x2, y2, x3, y3, x4, y4, numOfGreenWalls, numOfBlueWalls):
+        self.players = [Player('X', x1, y1, self), Player('X', x2, y2, self), Player('O', x3, y3, self), Player('O', x4, y4, self)]
         init()
         self.width = w 
         self.height = h * 2
-        self.startNodes = [[], [], [], []]
-        self.walls = [[], []]
+        self.startNodes = [[x1, y1], [x2, y2], [x4, y3], [x4, y4]]
+        self.walls = [[numOfGreenWalls, numOfBlueWalls], [numOfGreenWalls, numOfBlueWalls]]
         self.nodes = []
 
         for i in range(self.height):
@@ -43,9 +43,13 @@ class Board:
         return '   '
 
     def movePlayer(self, dir, distance, player):
-        self.players[player].move(dir, distance, self.width, self.height)
+        return self.players[player].move(dir, distance, self.width, self.height)
         
     def placeWallHorizontal(self, x, y):
+        x1 = y*2 + 1
+        y1 = x
+        x2 = y*2 + 1
+        y2 = x + 1  
         vX1 = y*2
         vY1 = x
         vX2 = y*2 + 2
@@ -63,10 +67,6 @@ class Board:
             print("HORIZONTAL WALL Y OVERFLOW.") 
             return False
 
-        x1 = y*2 + 1
-        y1 = x
-        x2 = y*2 + 1
-        y2 = x + 1  
         self.nodes[x1][y1].hasWall = True
         self.nodes[x2][y2].hasWall = True
 
@@ -78,7 +78,7 @@ class Board:
         hX2 = y*2 + 1 
         hY2 = x + 1
 
-        if (self.nodes[hX1][hY1].hasWall and self.nodes[hX2][hY2].hasWall):
+        if (self.nodes[hX1][hY1].hasWall and self.nodes[hX2][hY2].hasWall or self.nodes[y*2][x].hasWall or self.nodes[(y+1)*2][x].hasWall):
             print("[Vertical Wall] THERE IS ALREADY WALL")
             return False
 
@@ -100,13 +100,36 @@ class Board:
         return True
 
     def playTurn(self, player, pawn, dir, steps, wallColor, wallX, wallY):
-        playerMoved = self.movePlayer(dir, steps, (0 if player == 'X' else 2) + pawn-1)
+        playerIndex = (0 if player == 'X' else 2) + pawn-1
+        wallIndex = 0 if player == 'X' else 1
+        playerMoved = self.movePlayer(dir, steps, playerIndex)
         
         wallPlaced = False
+        noWallsLeft = False
         if wallColor == 'G':
-            wallPlaced = self.placeWallVertical(wallX - 1, wallY - 1)
+            if self.walls[wallIndex][0] > 0:
+                wallPlaced = self.placeWallVertical(wallX - 1, wallY - 1)
+                if wallPlaced:
+                    self.walls[wallIndex][0] -= 1
+                    print(self.walls)
+            else:
+                print(f"[Player {playerIndex+1}] No green walls left.")
+                noWallsLeft = True
         elif wallColor == 'B':
-            wallPlaced = self.placeWallHorizontal(wallX - 1, wallY - 1)
+            if self.walls[wallIndex][1] > 0:
+                wallPlaced = self.placeWallHorizontal(wallX - 1, wallY - 1)
+                if wallPlaced:
+                    self.walls[wallIndex][1] -= 1
+                    print(self.walls)
+            else:
+                print(f"[Player {playerIndex+1}] No blue walls left.")
+                noWallsLeft = True
+        if (not wallPlaced or noWallsLeft) and playerMoved:
+            self.movePlayer(10 - dir, steps, playerIndex)
 
-        if not wallPlaced and playerMoved:
-            self.movePlayer(10 - dir, steps, player[(0 if player == 'X' else 2) + pawn-1])
+    def isEnd(self):
+        if self.players[0].checkForEnd(self.startNodes[2:3]) or self.players[1].checkForEnd(self.startNodes[2:3]):
+            print("X HAS WON!")
+        elif self.players[2].checkForEnd(self.startNodes[0:1]) or self.players[3].checkForEnd(self.startNodes[0:1]):
+            print("O HAS WON!")
+            
