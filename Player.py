@@ -5,7 +5,6 @@ class Player:
         self.symbol = symbol
         self.x = pos[0]
         self.y = pos[1]
-        self.walls = 0
         self.board = board
 
     def setPlayerPos(self, x, y):

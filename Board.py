@@ -1,16 +1,17 @@
 from Node import Node
 from Player import Player
 from colorama import *
+from functools import *
 
 class Board:
     symbols = ['1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S' ]
 
-    def __init__(self, w, h, firstX, secondX, firstO, secondO, numOfWalls):
-        self.players = [Player('X', firstX, self), Player('X', secondX, self), Player('O', firstO, self), Player('O', secondO, self)]
+    def __init__(self, w, h, startPositions, numOfWalls, whoPlaysFirst):
+        self.players = [Player('X', startPositions[0], self), Player('X', startPositions[1], self), Player('O', startPositions[2], self), Player('O', startPositions[3], self)]
         init()
         self.width = w 
         self.height = h * 2
-        self.startNodes = [firstX, secondX, firstO, secondO]
+        self.startNodes = startPositions
         self.walls = [[numOfWalls, numOfWalls], [numOfWalls, numOfWalls]]
         self.nodes = []
 
@@ -18,7 +19,6 @@ class Board:
             self.nodes.append([])
             for j in range(self.width):
                 self.nodes[i].append(Node(i, j))
-
 
     def draw(self):
         c = 0
@@ -31,16 +31,27 @@ class Board:
                 l.insert(0, self.symbols[c] if i % 2 == 0 else ' ')
                 a = l.pop()[:-1:]
                 l.append(f'{self.getPlayerSymbol(i//2,self.width-1)}┃' if i % 2 == 0 else a + '┫')
+                l.append(' ' + self.symbols[c] if i % 2 == 0 else ' ')
                 print(*l, sep='')
                 if i % 2 == 0:
                     c += 1
         print(*[('  ┗━' if i == 0 else '━━┛' if i == self.width else '━━┻━') for i in range(self.width + 1)], sep='')
+        print('    ', end='')
+        print(*self.symbols[:self.width], sep='   ')
 
     def getPlayerSymbol(self, x, y):
         res = list(filter(lambda a: a.x == x and a.y == y, self.players))
         if len(res) > 0:
             return f' {res.pop().symbol} '
-        return '   '
+        return self.checkForStartingPosition(x, y)
+
+    def checkForStartingPosition(self, x, y):
+        res = list(filter(lambda a: a[0] == x and a[1] == y, self.startNodes))
+        if len(res) > 0:
+            index = self.startNodes.index([x, y])
+            return (Fore.YELLOW if index < 2 else Fore.RED) + ' ⦿ ' + Style.DIM + Style.RESET_ALL
+        else:
+            return '   '
 
     def movePlayer(self, dir, distance, player):
         return self.players[player].move(dir, distance, self.width, self.height)
@@ -55,7 +66,7 @@ class Board:
         vX2 = y*2 + 2
         vY2 = x
 
-        if (self.nodes[vX1][vY1].hasWall and self.nodes[vX2][vY2].hasWall or self.nodes[y + 1][x].hasWall or self.nodes[y + 1][x + 1].hasWall):
+        if (self.nodes[vX1][vY1].hasWall and self.nodes[vX2][vY2].hasWall or self.nodes[x1][y1 + 1].hasWall or self.nodes[x1][y1].hasWall):
             print("[Horizontal Wall] THERE IS ALREADY WALL")
             return False
 
@@ -106,6 +117,9 @@ class Board:
         
         wallPlaced = False
         noWallsLeft = False
+        if not playerMoved:
+            print("Unable to move player!")
+            return False
         if wallColor == 'G':
             if self.walls[wallIndex][0] > 0:
                 wallPlaced = self.placeWallVertical(wallX - 1, wallY - 1)
