@@ -1,10 +1,10 @@
 from colorama import *
 
 class Player:
-    def __init__(self, symbol, x, y, board):
+    def __init__(self, symbol, pos, board):
         self.symbol = symbol
-        self.x = x
-        self.y = y
+        self.x = pos[0]
+        self.y = pos[1]
         self.walls = 0
         self.board = board
 

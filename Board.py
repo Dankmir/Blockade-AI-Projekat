@@ -5,13 +5,13 @@ from colorama import *
 class Board:
     symbols = ['1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S' ]
 
-    def __init__(self, w, h, x1, y1, x2, y2, x3, y3, x4, y4, numOfGreenWalls, numOfBlueWalls):
-        self.players = [Player('X', x1, y1, self), Player('X', x2, y2, self), Player('O', x3, y3, self), Player('O', x4, y4, self)]
+    def __init__(self, w, h, firstX, secondX, firstO, secondO, numOfWalls):
+        self.players = [Player('X', firstX, self), Player('X', secondX, self), Player('O', firstO, self), Player('O', secondO, self)]
         init()
         self.width = w 
         self.height = h * 2
-        self.startNodes = [[x1, y1], [x2, y2], [x4, y3], [x4, y4]]
-        self.walls = [[numOfGreenWalls, numOfBlueWalls], [numOfGreenWalls, numOfBlueWalls]]
+        self.startNodes = [firstX, secondX, firstO, secondO]
+        self.walls = [[numOfWalls, numOfWalls], [numOfWalls, numOfWalls]]
         self.nodes = []
 
         for i in range(self.height):
