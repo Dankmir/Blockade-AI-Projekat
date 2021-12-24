@@ -140,6 +140,8 @@ class Board:
                 noWallsLeft = True
         if (not wallPlaced or noWallsLeft) and playerMoved:
             self.movePlayer(10 - dir, steps, playerIndex)
+            return False
+        return True
 
     def isEnd(self):
         if self.players[0].checkForEnd(self.startNodes[2:3]) or self.players[1].checkForEnd(self.startNodes[2:3]):
