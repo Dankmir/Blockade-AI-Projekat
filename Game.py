@@ -11,3 +11,6 @@ class Game:
         played = new_board.playTurn(player, pawn, dir, steps, wallColor, wallX, wallY)
         if (played):
             self.states.append(new_board)
+
+    def draw(self):
+        self.states[-1].draw()

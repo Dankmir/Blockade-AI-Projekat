@@ -14,11 +14,45 @@ class Board:
         self.startNodes = startPositions
         self.walls = [[numOfWalls, numOfWalls], [numOfWalls, numOfWalls]]
         self.nodes = []
+        self.graph = dict()
 
         for i in range(self.height):
             self.nodes.append([])
             for j in range(self.width):
                 self.nodes[i].append(Node(i, j))
+
+        self.initializeBoardGraph()
+
+
+    def initializeBoardGraph(self):
+        for i in range(self.height):
+            for j in range(self.width):
+                if i == 0:
+                    if j == 0:
+                        self.graph[(i, j)] = [ (i, j+1), (i+1, j), (i+1, j+1) ]
+                    elif j == self.width - 1:
+                        self.graph[(i, j)] = [ (i, j-1), (i+1, j), (i+1, j-1) ]
+                    else:
+                        self.graph[(i, j)] = [ (i, j-1), (i+1, j-1), (i+1, j), (i+1, j+1), (i, j+1) ]
+                elif i == self.height - 1:
+                    if j == 0:
+                        self.graph[(i, j)] = [ (i, j+1), (i-1, j), (i-1, j+1) ]
+                    elif j == self.width - 1:
+                        self.graph[(i, j)] = [ (i, j-1), (i-1, j), (i-1, j-1) ]
+                    else:
+                        self.graph[(i, j)] = [ (i, j-1), (i-1, j-1), (i-1, j), (i-1, j+1), (i, j+1) ]
+                elif j == 0:
+                    self.graph[(i, j)] = [ (i-1, j), (i-1, j+1), (i, j+1), (i+1, j+1), (i+1, j) ]
+                elif j == self.width-1:
+                    self.graph[(i, j)] = [ (i-1, j), (i-1, j-1), (i, j-1), (i+1, j-1), (i+1, j) ]
+                else:
+                    self.graph[(i, j)] = [  (i-1, j-1), (i-1, j),  (i-1, j+1),
+                                            (i,   j-1), (i,   j),  (i,   j+1),
+                                            (i+1, j-1), (i+1, j),  (i+1, j+1)  ]
+
+    def checkGraphConnection(self, p1, p2):
+        if (p2[0], p2[1]) in self.graph[(p1[0], p1[1])]:
+            print("TU JE!")
 
     def draw(self):
         c = 0
@@ -78,6 +112,9 @@ class Board:
             print("HORIZONTAL WALL Y OVERFLOW.") 
             return False
 
+        # Remove connections from graph
+        self.removeGraphConnectionsHorizontal(x, y)
+
         self.nodes[x1][y1].hasWall = True
         self.nodes[x2][y2].hasWall = True
 
@@ -101,6 +138,15 @@ class Board:
             print("VERTICAL WALL Y OVERFLOW.") 
             return False
 
+        # Remove connections from graph
+        self.removeGraphConnectionsVertical(x, y)
+        if self.nodes[hY2][hX2].hasWall: # x+1; y+1
+            print("AAAAAAAAAAAAAAAAAAAAAAAAA")
+
+        if self.nodes[hY2][x].hasWall: # x+1; y+1
+            print("nesto drugo")
+
+
         x1 = y*2
         y1 = x
         x2 = y*2 + 2
@@ -109,6 +155,43 @@ class Board:
         self.nodes[x2][y2].hasWall = True
 
         return True
+
+    #    def wallBetween(self, p1, p2):
+
+
+    def removeGraphConnectionsHorizontal(self, x, y):
+        if (x, y+1) in self.graph[(x, y)]:
+            self.graph[(x, y)].remove((x, y+1))
+            self.graph[(x , y+1)].remove((x, y))
+
+        if (x+1, y+1) in self.graph[(x, y)]:
+            self.graph[(x, y)].remove((x+1, y+1))
+            self.graph[(x+1, y+1)].remove((x, y))
+
+        if (x, y+1) in self.graph[(x+1, y)]:
+            self.graph[(x+1, y)].remove((x, y+1))
+            self.graph[(x , y+1)].remove((x+1, y))
+
+        if (x+1, y+1) in self.graph[(x+1, y)]:
+            self.graph[(x+1, y)].remove((x+1, y+1))
+            self.graph[(x+1, y+1)].remove((x+1, y))
+
+    def removeGraphConnectionsVertical(self, x, y):
+        if (x+1, y) in self.graph[(x, y)]:
+            self.graph[(x, y)].remove((x+1, y))
+            self.graph[(x+1 , y)].remove((x, y))
+
+        if (x+1, y+1) in self.graph[(x, y)]:
+            self.graph[(x, y)].remove((x+1, y+1))
+            self.graph[(x+1, y+1)].remove((x, y))
+
+        if (x+1, y) in self.graph[(x, y+1)]:
+            self.graph[(x, y+1)].remove((x+1, y))
+            self.graph[(x+1, y)].remove((x, y+1))
+
+        if (x+1, y+1) in self.graph[(x, y+1)]:
+            self.graph[(x, y+1)].remove((x+1, y+1))
+            self.graph[(x+1, y+1)].remove((x+1, y))
 
     def playTurn(self, player, pawn, dir, steps, wallColor, wallX, wallY):
         playerIndex = (0 if player == 'X' else 2) + pawn-1
@@ -148,4 +231,3 @@ class Board:
             print("X HAS WON!")
         elif self.players[2].checkForEnd(self.startNodes[0:1]) or self.players[3].checkForEnd(self.startNodes[0:1]):
             print("O HAS WON!")
-            

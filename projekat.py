@@ -37,20 +37,29 @@ startPositions.append([x - 1, y - 1])
 '''
 
 game = Game(11, 14, [[3, 3], [3, 7], [10, 3], [10, 7]], 10, 'x')
-
+'''
 game.playTurn('O', 1, 8, 1, 'B', 1, 1)
 game.playTurn('O', 2, 8, 1, 'B', 1, 4)
+'''
+
+game.states[-1].checkGraphConnection((0, 0), (1, 0))
+game.states[-1].checkGraphConnection((0, 0), (1, 1))
+game.states[-1].checkGraphConnection((0, 1), (1, 0))
+game.states[-1].checkGraphConnection((0, 1), (1, 1))
+game.states[-1].placeWallVertical(0, 0)
+game.states[-1].placeWallHorizontal(1, 1)
+game.states[-1].placeWallVertical(2, 0)
+game.states[-1].placeWallVertical(0, 2)
+game.states[-1].placeWallVertical(2, 2)
+game.states[-1].checkGraphConnection((0, 0), (1, 0))
+game.states[-1].checkGraphConnection((0, 0), (1, 1))
+game.states[-1].checkGraphConnection((0, 1), (1, 0))
+game.states[-1].checkGraphConnection((0, 1), (1, 1))
+game.draw()
 #b = Board(11, 14, [[3, 3], [3, 7], [10, 3], [10, 7]], 10, 'x')
 
 
 #b = Board(m, n, startPositions, walls, p)
-
-b.draw()
-
-b.placeWallHorizontal(0, 0)
-b.placeWallHorizontal(1, 1)
-b.placeWallHorizontal(2, 2)
-
 
 
 '''
@@ -64,10 +73,4 @@ b.playTurn('X', 1, 8, 1, 'G', 3, 2)
 b.playTurn('X', 1, 8, 1, 'G', 4, 2)
 b.playTurn('X', 1, 8, 1, 'G', 5, 2)
 b.playTurn('X', 2, 4, 1, 'G', 8, 2)
-'''
-
-b.isEnd()
-b.draw()
-
-'''
 '''
