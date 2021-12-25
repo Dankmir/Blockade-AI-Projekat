@@ -7,7 +7,7 @@ class Game:
         self.states.append(Board(w, h, startPositions, numOfWalls, whoPlaysFirst))
 
     def playTurn(self, player, pawn, dir, steps, wallColor, wallX, wallY):
-        new_board = copy.copy(self.states[-1])
+        new_board = copy.deepcopy(self.states[-1])
         played = new_board.playTurn(player, pawn, dir, steps, wallColor, wallX, wallY)
         if (played):
             self.states.append(new_board)
@@ -20,3 +20,6 @@ class Game:
 
     def placeWallHorizontal(self, x, y):
         self.states[-1].placeWallHorizontal(x-1, y-1)
+
+    def checkPath(self, p1, p2):
+        print(self.states[-1].checkPath(p1, p2))

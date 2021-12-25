@@ -1,23 +1,21 @@
-from Node import Node
 from Player import Player
 from colorama import *
 from functools import *
+import queue
 
 class Board:
     symbols = ['1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S' ]
 
     def __init__(self, w, h, startPositions, numOfWalls, whoPlaysFirst):
-        self.players = [Player('X', startPositions[0], self), Player('X', startPositions[1], self), Player('O', startPositions[2], self), Player('O', startPositions[3], self)]
         init()
+        self.players = [Player('X', startPositions[0], self), Player('X', startPositions[1], self), Player('O', startPositions[2], self), Player('O', startPositions[3], self)]
         self.width = w 
         self.height = h
         self.startNodes = startPositions
         self.walls = [[numOfWalls, numOfWalls], [numOfWalls, numOfWalls]]
-        self.nodes = []
         self.graph = dict()
 
         self.initializeBoardGraph()
-
 
     def initializeBoardGraph(self):
         for i in range(self.height):
@@ -82,7 +80,7 @@ class Board:
         return (Style.DIM if hasConnection or not inBoard else Fore.GREEN if x == 0 else Fore.CYAN) + symbol + Style.RESET_ALL
 
     def getFieldSymbol(self, node):
-        return '   '    
+        return self.getPlayerSymbol(node[0], node[1]) 
 
     def getPlayerSymbol(self, x, y):
         res = list(filter(lambda a: a.x == x and a.y == y, self.players))
@@ -104,16 +102,18 @@ class Board:
     def placeWallHorizontal(self, x, y):
         if not self.checkGraphConnection((x, y), (x+1, y)) or not self.checkGraphConnection((x, y), (x+1, y+1)) or not self.checkGraphConnection((x, y+1), (x+1, y+1)):
             print("There is already a wall")
-            return
+            return False
 
         self.removeGraphConnectionsHorizontal(x, y)
-      
+        return True
+
     def placeWallVertical(self, x, y):
         if not self.checkGraphConnection((x, y), (x, y+1)) or not self.checkGraphConnection((x, y), (x+1, y+1)) or not self.checkGraphConnection((x+1, y), (x+1, y+1)):
             print("There is already a wall")
-            return
+            return False
 
         self.removeGraphConnectionsVertical(x, y)
+        return True
 
     def removeGraphConnectionsHorizontal(self, x, y):
         if (x+1, y) in self.graph[(x, y)]:
@@ -132,6 +132,27 @@ class Board:
             self.graph[(x, y+1)].remove((x+1, y+1))
             self.graph[(x+1, y+1)].remove((x, y+1))
 
+        # Dijagonale (Kada se napravi ugao sa vertikalnim zidom)
+        if (x, y+2) not in self.graph[(x, y+1)]:
+            if (x+1, y+2) in self.graph[(x, y+1)]:
+                self.graph[(x, y+1)].remove((x+1, y+2))
+                self.graph[(x+1, y+2)].remove((x, y+1))
+
+        if (x, y-1) not in self.graph[(x, y)]:
+            if (x+1, y-1) in self.graph[(x, y)]:
+                self.graph[(x, y)].remove((x+1, y-1))
+                self.graph[(x+1, y-1)].remove((x, y))
+
+        if (x+1, y+2) not in self.graph[(x+1, y+1)]:
+            if (x, y+2) in self.graph[(x+1, y+1)]:
+                self.graph[(x+1, y+1)].remove((x, y+2))
+                self.graph[(x, y+2)].remove((x+1, y+1))
+
+        if (x+1, y-1) not in self.graph[(x+1, y)]:
+            if (x, y-1) in self.graph[(x+1, y)]:
+                self.graph[(x+1, y)].remove((x, y-1))
+                self.graph[(x, y-1)].remove((x+1, y))        
+
     def removeGraphConnectionsVertical(self, x, y):
         if (x, y+1) in self.graph[(x, y)]:
             self.graph[(x, y)].remove((x, y+1))
@@ -149,9 +170,31 @@ class Board:
             self.graph[(x+1, y)].remove((x+1, y+1))
             self.graph[(x+1, y+1)].remove((x+1, y))
 
+        # Dijagonale (Kada se napravi ugao sa horizontalnim zidom)
+        if (x-1, y) not in self.graph[(x, y)]:
+            if (x-1, y+1) in self.graph[(x, y)]:
+                self.graph[(x, y)].remove((x-1, y+1))
+                self.graph[(x-1, y+1)].remove((x, y))
+
+        if (x+2, y) not in self.graph[(x+1, y)]:
+            if (x+2, y+1) in self.graph[(x+1, y)]:
+                self.graph[(x+1, y)].remove((x+2, y+1))
+                self.graph[(x+2, y+1)].remove((x+1, y))
+
+        if (x-1, y+1) not in self.graph[(x, y+1)]:
+            if (x-1, y) in self.graph[(x, y+1)]:
+                self.graph[(x, y+1)].remove((x-1, y))
+                self.graph[(x-1, y)].remove((x, y+1))
+        
+        if (x+2, y+1) not in self.graph[(x+1, y+1)]:
+            if (x+2, y) in self.graph[(x+1, y+1)]:
+                self.graph[(x+1, y+1)].remove((x+2, y))
+                self.graph[(x+2, y)].remove((x+1, y+1))
+
     def playTurn(self, player, pawn, dir, steps, wallColor, wallX, wallY):
         playerIndex = (0 if player == 'X' else 2) + pawn-1
         wallIndex = 0 if player == 'X' else 1
+        playerPos = (self.players[playerIndex].x, self.players[playerIndex].y)
         playerMoved = self.movePlayer(dir, steps, playerIndex)
         
         wallPlaced = False
@@ -177,9 +220,22 @@ class Board:
             else:
                 print(f"[Player {playerIndex+1}] No blue walls left.")
                 noWallsLeft = True
-        if (not wallPlaced or noWallsLeft) and playerMoved:
+        
+        anyPathBlocked = False
+        for i, p in enumerate(self.players):
+            for j in range(2):
+                p1 = tuple(self.startNodes[2+j if i < 2 else j])
+                p2 = playerPos
+                if not self.checkPath(p1, p2):
+                    anyPathBlocked = True
+                    break
+            if anyPathBlocked:
+                break
+
+        if (not wallPlaced or noWallsLeft) and playerMoved or anyPathBlocked:
             self.movePlayer(10 - dir, steps, playerIndex)
             return False
+
         return True
 
     def isEnd(self):
@@ -187,3 +243,37 @@ class Board:
             print("X HAS WON!")
         elif self.players[2].checkForEnd(self.startNodes[0:1]) or self.players[3].checkForEnd(self.startNodes[0:1]):
             print("O HAS WON!")
+
+    def checkPath(self, p1, p2):
+        start = p1
+        end = p2
+        path = list()
+        queue_nodes = queue.Queue(len(self.graph))
+        visited = set()
+        prev_nodes = dict()
+        prev_nodes[start] = None
+        visited.add(start)
+        queue_nodes.put(start)
+        found_dest = False
+
+        while (not found_dest) and (not queue_nodes.empty()):
+            node = queue_nodes.get()
+            #process(node)
+            for dest in self.graph[node]:
+                if dest not in visited:
+                    prev_nodes[dest] = node
+                    if dest == end:
+                        found_dest = True
+                        break
+                    visited.add(dest)
+                    queue_nodes.put(dest)
+
+        if found_dest:
+            path.append(end)
+            prev = prev_nodes[end]
+            while prev is not None:
+                path.append(prev)
+                prev = prev_nodes[prev]
+            path.reverse()
+            
+        return len(path) > 0

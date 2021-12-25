@@ -74,23 +74,23 @@ class Player:
         return False
 
     def hasWallNorth(self, x, y):
-        return self.board.nodes[x*2 - 1][y].hasWall 
+        return not self.board.checkGraphConnection((x,y), (x - 1, y))
     
     def hasWallEast(self, x, y):
-        return self.board.nodes[x*2][y - 1].hasWall  
+        return not self.board.checkGraphConnection((x,y), (x, y - 1))
     
     def hasWallSouth(self, x, y):
-        return self.board.nodes[x*2 + 1][y].hasWall  
+        return not self.board.checkGraphConnection((x,y), (x + 1, y))
     
     def hasWallWest(self, x, y):
-        return self.board.nodes[x*2][y].hasWall  
+        return not self.board.checkGraphConnection((x,y), (x, y + 1))
 
     def validateMove(self, x, y, boardWidth, boardHeight):
         if len(list(filter(lambda a: a.x == x and a.y == y, self.board.players))) > 0:
             print("INVALID MOVE (FIELD NOT EMPTY)")
             return False    
 
-        if x * 2 >= boardHeight or x < 0 or y >= boardWidth or y < 0:
+        if x >= boardHeight or x < 0 or y >= boardWidth or y < 0:
             print("INVALID MOVE")
             return False
         return True
