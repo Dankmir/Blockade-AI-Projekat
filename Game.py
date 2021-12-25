@@ -14,3 +14,9 @@ class Game:
 
     def draw(self):
         self.states[-1].draw()
+
+    def placeWallVertical(self, x, y):
+        self.states[-1].placeWallVertical(x-1, y-1)
+
+    def placeWallHorizontal(self, x, y):
+        self.states[-1].placeWallHorizontal(x-1, y-1)

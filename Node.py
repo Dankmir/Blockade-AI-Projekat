@@ -6,7 +6,11 @@ class Node:
         self.y = y
         self.hasWall = False
         self.hasPlayer = False
-        self.neighbors = list()
+
+        self.prevX = None
+        self.nextX = None
+        self.prevY = None
+        self.nextY = None
 
     def addNeighbor(self, neighbor):
         self.neighbors.append(neighbor)
