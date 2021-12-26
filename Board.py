@@ -76,7 +76,7 @@ class Board:
 
     def getWallSymbol(self, node, x, y, symbol):
         hasConnection = self.checkGraphConnection(node, (node[0] + x, node[1] + y))
-        inBoard = node[0] + x >= 0 and node[0] + x < self.height-1 and node[1] + y >= 0 and node[1] + y <= self.width-1
+        inBoard = node[0] + x >= 0 and node[0] + x < self.height and node[1] + y >= 0 and node[1] + y <= self.width-1
         return (Style.DIM if hasConnection or not inBoard else Fore.GREEN if x == 0 else Fore.CYAN) + symbol + Style.RESET_ALL
 
     def getFieldSymbol(self, node):
@@ -101,7 +101,7 @@ class Board:
         
     def placeWallHorizontal(self, x, y):
         if not self.checkGraphConnection((x, y), (x+1, y)) or not self.checkGraphConnection((x, y), (x+1, y+1)) or not self.checkGraphConnection((x, y+1), (x+1, y+1)):
-            print("There is already a wall")
+            print(Fore.RED + "There is already a wall." + Style.RESET_ALL)
             return False
 
         self.removeGraphConnectionsHorizontal(x, y)
@@ -109,7 +109,7 @@ class Board:
 
     def placeWallVertical(self, x, y):
         if not self.checkGraphConnection((x, y), (x, y+1)) or not self.checkGraphConnection((x, y), (x+1, y+1)) or not self.checkGraphConnection((x+1, y), (x+1, y+1)):
-            print("There is already a wall")
+            print(Fore.RED + "There is already a wall." + Style.RESET_ALL)
             return False
 
         self.removeGraphConnectionsVertical(x, y)
@@ -200,32 +200,32 @@ class Board:
         wallPlaced = False
         noWallsLeft = False
         if not playerMoved:
-            print("Unable to move player!")
+            print(Fore.Red + "Unable to move player!" + Style.RESET_ALL)
             return False
         if wallColor == 'G':
             if self.walls[wallIndex][0] > 0:
                 wallPlaced = self.placeWallVertical(wallX - 1, wallY - 1)
                 if wallPlaced:
                     self.walls[wallIndex][0] -= 1
-                    print(self.walls)
+                    self.getWallsLeft()
             else:
-                print(f"[Player {playerIndex+1}] No green walls left.")
+                print(Fore.RED + f"[Player {playerIndex+1}] No {Fore.GREEN}green{Style.RESET_ALL} walls left." + Style.RESET_ALL)
                 noWallsLeft = True
         elif wallColor == 'B':
             if self.walls[wallIndex][1] > 0:
                 wallPlaced = self.placeWallHorizontal(wallX - 1, wallY - 1)
                 if wallPlaced:
                     self.walls[wallIndex][1] -= 1
-                    print(self.walls)
+                    self.getWallsLeft()
             else:
-                print(f"[Player {playerIndex+1}] No blue walls left.")
+                print(Fore.RED + f"[Player {playerIndex+1}] No {Fore.CYAN}blue{Style.RESET_ALL} walls left." + Style.RESET_ALL)
                 noWallsLeft = True
         
         anyPathBlocked = False
         for i, p in enumerate(self.players):
             for j in range(2):
                 p1 = tuple(self.startNodes[2+j if i < 2 else j])
-                p2 = playerPos
+                p2 = (p.x, p.y) if playerIndex != i else playerPos
                 if not self.checkPath(p1, p2):
                     anyPathBlocked = True
                     break
@@ -240,40 +240,31 @@ class Board:
 
     def isEnd(self):
         if self.players[0].checkForEnd(self.startNodes[2:3]) or self.players[1].checkForEnd(self.startNodes[2:3]):
-            print("X HAS WON!")
+            print(Fore.YELLOW + "X HAS WON!" + Style.RESET_ALL)
+            return True
         elif self.players[2].checkForEnd(self.startNodes[0:1]) or self.players[3].checkForEnd(self.startNodes[0:1]):
-            print("O HAS WON!")
+            print(Fore.RED + "O HAS WON!" + Style.RESET_ALL)
+            return True
+        return False
 
-    def checkPath(self, p1, p2):
-        start = p1
-        end = p2
-        path = list()
+    def checkPath(self, start, end):
         queue_nodes = queue.Queue(len(self.graph))
         visited = set()
-        prev_nodes = dict()
-        prev_nodes[start] = None
         visited.add(start)
         queue_nodes.put(start)
         found_dest = False
 
         while (not found_dest) and (not queue_nodes.empty()):
             node = queue_nodes.get()
-            #process(node)
             for dest in self.graph[node]:
                 if dest not in visited:
-                    prev_nodes[dest] = node
                     if dest == end:
                         found_dest = True
                         break
                     visited.add(dest)
                     queue_nodes.put(dest)
-
-        if found_dest:
-            path.append(end)
-            prev = prev_nodes[end]
-            while prev is not None:
-                path.append(prev)
-                prev = prev_nodes[prev]
-            path.reverse()
             
-        return len(path) > 0
+        return found_dest
+
+    def getWallsLeft(self):
+        print(self.walls)
