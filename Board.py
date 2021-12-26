@@ -109,7 +109,7 @@ class Board:
 
     def placeWallVertical(self, x, y):
         if not self.checkGraphConnection((x, y), (x, y+1)) or not self.checkGraphConnection((x, y), (x+1, y+1)) or not self.checkGraphConnection((x+1, y), (x+1, y+1)):
-            print(Fore.RED + "There is already a wall." + Style.RESET_ALL)
+            print(Fore.RED + "There is already a wall" + Style.RESET_ALL)
             return False
 
         self.removeGraphConnectionsVertical(x, y)

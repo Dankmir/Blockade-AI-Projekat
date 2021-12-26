@@ -4,16 +4,6 @@ import copy
 import os
 
 class Game:
-    def __init__(self, w, h, startPositions, numOfWalls, playerSymbol):
-        self.clearConsole()
-
-        self.width = w
-        self.height = h
-        self.states = []
-        self.states.append(Board(w, h, startPositions, numOfWalls, playerSymbol))
-        self.playerSymbol = playerSymbol
-        self.draw()
-
     def initialize(self):
         self.clearConsole()
 
