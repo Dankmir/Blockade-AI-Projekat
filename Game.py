@@ -12,9 +12,9 @@ class Game:
         print("Izaberite igraca")
         playerSymbol = self.getInputString("X ili O: ", ['X', 'O'])
 
-        print("Izaberite velicinu table, preporuceno je 14x11 a maksimalno dozvoljeno 28x22")
-        n = self.getInput("Broj vrsta table: ", 14, 28)
+        print("Izaberite velicinu table, preporuceno je 11x14 a maksimalno dozvoljeno 22x28")
         m = self.getInput("Broj kolona table: ", 11, 22)
+        n = self.getInput("Broj vrsta table: ", 14, 28)
 
         numOfWalls = self.getInput("Izaberite broj zidova (preporuceno je 9 a maksimalno 18): ", 9, 18)
 
@@ -72,7 +72,7 @@ class Game:
     def getInputString(self, text, possibleStrings):
         inp = input(text)
         while inp not in possibleStrings:
-            print(Fore.RED + f"Invalid input. ( range{[x for x in possibleStrings]} )" + Style.RESET_ALL)
+            print(Fore.RED + f"Invalid input. ( range{possibleStrings} )" + Style.RESET_ALL)
             inp =  input(text)
         return inp
 

@@ -199,6 +199,7 @@ class Board:
         
         wallPlaced = False
         noWallsLeft = False
+        anyPathBlocked = False
         if not playerMoved:
             print(Fore.Red + "Unable to move player!" + Style.RESET_ALL)
             return False
@@ -208,6 +209,8 @@ class Board:
                 if wallPlaced:
                     self.walls[wallIndex][0] -= 1
                     self.getWallsLeft()
+                    if self.checkWallsVertical(wallX - 1 , wallY - 1):
+                        anyPathBlocked = self.checkIfPathIsBlocked(playerIndex, playerPos)
             else:
                 print(Fore.RED + f"[Player {playerIndex+1}] No {Fore.GREEN}green{Style.RESET_ALL} walls left." + Style.RESET_ALL)
                 noWallsLeft = True
@@ -217,26 +220,40 @@ class Board:
                 if wallPlaced:
                     self.walls[wallIndex][1] -= 1
                     self.getWallsLeft()
+                    if self.checkWallsHorizontal(wallX - 1 , wallY - 1):
+                        anyPathBlocked = self.checkIfPathIsBlocked(playerIndex, playerPos)
             else:
                 print(Fore.RED + f"[Player {playerIndex+1}] No {Fore.CYAN}blue{Style.RESET_ALL} walls left." + Style.RESET_ALL)
                 noWallsLeft = True
         
-        anyPathBlocked = False
-        for i, p in enumerate(self.players):
-            for j in range(2):
-                p1 = tuple(self.startNodes[2+j if i < 2 else j])
-                p2 = (p.x, p.y) if playerIndex != i else playerPos
-                if not self.checkPath(p1, p2):
-                    anyPathBlocked = True
-                    break
-            if anyPathBlocked:
-                break
+        if wallPlaced and self.checkWallsHorizontal(wallX - 1 , wallY - 1):
+            print("Horizontal walls exist.")
+            anyPathBlocked = self.checkIfPathIsBlocked(playerIndex, playerPos)
 
         if (not wallPlaced or noWallsLeft) and playerMoved or anyPathBlocked:
             self.movePlayer(10 - dir, steps, playerIndex)
             return False
 
         return True
+
+    def checkWallsHorizontal(self, x, y):
+        return (y == 0 or y == self.width-2) or (not self.checkGraphConnection((x, y-1), (x+1, y-1)) and not self.checkGraphConnection((x, y+2), (x+1, y+2)))
+
+    def checkWallsVertical(self, x, y):
+            return (x == 0 or x == self.height-2) or (not self.checkGraphConnection((x-1, y), (x-1, y+1)) and not self.checkGraphConnection((x+2, y), (x+2, y+1)))
+
+    def checkIfPathIsBlocked(self, playerIndex, playerPos):
+        anyPathBlocked = False
+        for i, p in enumerate(self.players):
+                for j in range(2):
+                    p1 = tuple(self.startNodes[2+j if i < 2 else j])
+                    p2 = (p.x, p.y) if playerIndex != i else playerPos
+                    if not self.checkPath(p1, p2):
+                        anyPathBlocked = True
+                        break
+                if anyPathBlocked:
+                    break
+        return anyPathBlocked
 
     def isEnd(self):
         if self.players[0].checkForEnd(self.startNodes[2:3]) or self.players[1].checkForEnd(self.startNodes[2:3]):
@@ -267,4 +284,5 @@ class Board:
         return found_dest
 
     def getWallsLeft(self):
-        print(self.walls)
+        print(f'X walls: {Fore.CYAN}{self.walls[0][1]}{Style.RESET_ALL}, {Fore.GREEN}{self.walls[0][0]}{Style.RESET_ALL}')
+        print(f'O walls: {Fore.CYAN}{self.walls[1][1]}{Style.RESET_ALL}, {Fore.GREEN}{self.walls[1][0]}{Style.RESET_ALL}')
