@@ -44,7 +44,10 @@ class Board:
                                             (i+1, j-1), (i+1, j),  (i+1, j+1)  ]
 
     def checkGraphConnection(self, p1, p2):
-        return (p2[0], p2[1]) in self.graph[(p1[0], p1[1])]
+        if p1 not in self.graph.keys() or p2 not in self.graph.keys():
+            return False
+        else:
+            return (p2[0], p2[1]) in self.graph[(p1[0], p1[1])]
 
     def draw(self):
         c = 0
@@ -101,7 +104,7 @@ class Board:
         
     def placeWallHorizontal(self, x, y):
         if not self.checkGraphConnection((x, y), (x+1, y)) or not self.checkGraphConnection((x, y), (x+1, y+1)) or not self.checkGraphConnection((x, y+1), (x+1, y+1)):
-            print(Fore.RED + "There is already a wall." + Style.RESET_ALL)
+            # print(Fore.RED + "There is already a wall." + Style.RESET_ALL)
             return False
 
         self.removeGraphConnectionsHorizontal(x, y)
@@ -109,7 +112,7 @@ class Board:
 
     def placeWallVertical(self, x, y):
         if not self.checkGraphConnection((x, y), (x, y+1)) or not self.checkGraphConnection((x, y), (x+1, y+1)) or not self.checkGraphConnection((x+1, y), (x+1, y+1)):
-            print(Fore.RED + "There is already a wall" + Style.RESET_ALL)
+            # print(Fore.RED + "There is already a wall" + Style.RESET_ALL)
             return False
 
         self.removeGraphConnectionsVertical(x, y)
@@ -131,6 +134,24 @@ class Board:
         if (x+1, y+1) in self.graph[(x, y+1)]:
             self.graph[(x, y+1)].remove((x+1, y+1))
             self.graph[(x+1, y+1)].remove((x, y+1))
+
+        if not self.checkGraphConnection((x, y+2), (x+1, y+2)): 
+            if self.checkGraphConnection((x, y+1), (x+1, y+2)):           
+                self.graph[(x+1, y+2)].remove((x, y+1))
+                self.graph[(x, y+1)].remove((x+1, y+2))
+
+            if self.checkGraphConnection((x, y+2), (x+1, y+1)):
+                self.graph[(x+1, y+1)].remove((x, y+2))
+                self.graph[(x, y+2)].remove((x+1, y+1))
+
+        if not self.checkGraphConnection((x, y-1), (x+1, y-1)):
+            if self.checkGraphConnection((x, y), (x+1, y-1)):           
+                self.graph[(x+1, y-1)].remove((x, y))
+                self.graph[(x, y)].remove((x+1, y-1))
+
+            if self.checkGraphConnection((x, y-1), (x+1, y)):
+                self.graph[(x+1, y)].remove((x, y-1))
+                self.graph[(x, y-1)].remove((x+1, y))
 
         # Dijagonale (Kada se napravi ugao sa vertikalnim zidom)
         if (x, y+2) not in self.graph[(x, y+1)]:
@@ -170,6 +191,26 @@ class Board:
             self.graph[(x+1, y)].remove((x+1, y+1))
             self.graph[(x+1, y+1)].remove((x+1, y))
 
+
+        if not self.checkGraphConnection((x-1, y), (x-1, y+1)): 
+            if self.checkGraphConnection((x-1, y), (x, y+1)):           
+                self.graph[(x, y+1)].remove((x-1, y))
+                self.graph[(x-1, y)].remove((x, y+1))
+
+            if self.checkGraphConnection((x, y), (x-1, y+1)):
+                self.graph[(x-1, y+1)].remove((x, y))
+                self.graph[(x, y)].remove((x-1, y+1))
+
+        if not self.checkGraphConnection((x+2, y), (x+2, y+1)):
+            if self.checkGraphConnection((x+1, y), (x+2, y+1)):           
+                self.graph[(x+2, y+1)].remove((x+1, y))
+                self.graph[(x+1, y)].remove((x+2, y+1))
+
+            if self.checkGraphConnection((x+2, y), (x+1, y+1)):
+                self.graph[(x+1, y+1)].remove((x+2, y))
+                self.graph[(x+2, y)].remove((x+1, y+1))
+
+
         # Dijagonale (Kada se napravi ugao sa horizontalnim zidom)
         if (x-1, y) not in self.graph[(x, y)]:
             if (x-1, y+1) in self.graph[(x, y)]:
@@ -201,34 +242,34 @@ class Board:
         noWallsLeft = False
         anyPathBlocked = False
         if not playerMoved:
-            print(Fore.Red + "Unable to move player!" + Style.RESET_ALL)
+            # print(Fore.RED + "Unable to move player!" + Style.RESET_ALL)
             return False
         if wallColor == 'G':
             if self.walls[wallIndex][0] > 0:
                 wallPlaced = self.placeWallVertical(wallX - 1, wallY - 1)
                 if wallPlaced:
                     self.walls[wallIndex][0] -= 1
-                    self.getWallsLeft()
+                    # self.getWallsLeft()
                     if self.checkWallsVertical(wallX - 1 , wallY - 1):
                         anyPathBlocked = self.checkIfPathIsBlocked(playerIndex, playerPos)
             else:
-                print(Fore.RED + f"[Player {playerIndex+1}] No {Fore.GREEN}green{Style.RESET_ALL} walls left." + Style.RESET_ALL)
+                # print(Fore.RED + f"[Player {playerIndex+1}] No {Fore.GREEN}green{Style.RESET_ALL} walls left." + Style.RESET_ALL)
                 noWallsLeft = True
         elif wallColor == 'B':
             if self.walls[wallIndex][1] > 0:
                 wallPlaced = self.placeWallHorizontal(wallX - 1, wallY - 1)
                 if wallPlaced:
                     self.walls[wallIndex][1] -= 1
-                    self.getWallsLeft()
+                    # self.getWallsLeft()
                     if self.checkWallsHorizontal(wallX - 1 , wallY - 1):
                         anyPathBlocked = self.checkIfPathIsBlocked(playerIndex, playerPos)
             else:
-                print(Fore.RED + f"[Player {playerIndex+1}] No {Fore.CYAN}blue{Style.RESET_ALL} walls left." + Style.RESET_ALL)
+                # print(Fore.RED + f"[Player {playerIndex+1}] No {Fore.CYAN}blue{Style.RESET_ALL} walls left." + Style.RESET_ALL)
                 noWallsLeft = True
         
-        if wallPlaced and self.checkWallsHorizontal(wallX - 1 , wallY - 1):
-            print("Horizontal walls exist.")
-            anyPathBlocked = self.checkIfPathIsBlocked(playerIndex, playerPos)
+        # if wallPlaced and self.checkWallsHorizontal(wallX - 1 , wallY - 1):
+        #     print("Horizontal walls exist.")
+        #     anyPathBlocked = self.checkIfPathIsBlocked(playerIndex, playerPos)
 
         if (not wallPlaced or noWallsLeft) and playerMoved or anyPathBlocked:
             self.movePlayer(10 - dir, steps, playerIndex)
@@ -237,10 +278,16 @@ class Board:
         return True
 
     def checkWallsHorizontal(self, x, y):
-        return (y == 0 or y == self.width-2) or (not self.checkGraphConnection((x, y-1), (x+1, y-1)) and not self.checkGraphConnection((x, y+2), (x+1, y+2)))
+        vertical_right = not self.checkGraphConnection((x, y+1), (x, y+2)) and not self.checkGraphConnection((x+1, y+1), (x+1, y+2))
+        vertical_left = not self.checkGraphConnection((x, y), (x, y-1)) and not self.checkGraphConnection((x+1, y), (x+1, y-1))
+        horizontal = (not self.checkGraphConnection((x, y-1), (x+1, y-1)) or vertical_left) and (not self.checkGraphConnection((x, y+2), (x+1, y+2)) or vertical_right)
+        return (y == 0 or y == self.width-2) or horizontal
 
     def checkWallsVertical(self, x, y):
-            return (x == 0 or x == self.height-2) or (not self.checkGraphConnection((x-1, y), (x-1, y+1)) and not self.checkGraphConnection((x+2, y), (x+2, y+1)))
+            horizontal_up = not self.checkGraphConnection((x, y), (x-1, y)) and not self.checkGraphConnection((x, y+1), (x-1, y+1))
+            horizontal_down = not self.checkGraphConnection((x+1, y), (x+2, y)) and not self.checkGraphConnection((x+1, y+1), (x+2, y+1))
+            vertical = (not self.checkGraphConnection((x-1, y), (x-1, y+1)) or horizontal_up) and (not self.checkGraphConnection((x+2, y), (x+2, y+1)) or horizontal_down)
+            return (x == 0 or x == self.height-2) or vertical
 
     def checkIfPathIsBlocked(self, playerIndex, playerPos):
         anyPathBlocked = False

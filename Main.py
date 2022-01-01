@@ -1,5 +1,5 @@
 from Game import Game
 
 game = Game()
-game.initialize()
-game.startGame()
+# game.generateStates(game.states[-1])
+game.start()

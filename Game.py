@@ -2,9 +2,11 @@ from Board import Board
 from colorama import *
 import copy
 import os
+import time
+import random
 
 class Game:
-    def initialize(self):
+    def __init__(self):
         self.clearConsole()
 
         startPositions = []
@@ -13,10 +15,10 @@ class Game:
         playerSymbol = self.getInputString("X ili O: ", ['X', 'O'])
 
         print("Izaberite velicinu table, preporuceno je 11x14 a maksimalno dozvoljeno 22x28")
-        m = self.getInput("Broj kolona table: ", 11, 22)
-        n = self.getInput("Broj vrsta table: ", 14, 28)
+        m = self.getInput("Broj kolona table: ", 5, 22)
+        n = self.getInput("Broj vrsta table: ", 5, 28)
 
-        numOfWalls = self.getInput("Izaberite broj zidova (preporuceno je 9 a maksimalno 18): ", 9, 18)
+        numOfWalls = self.getInput("Izaberite broj zidova (preporuceno je 9 a maksimalno 18): ", 4, 18)
 
         print("Izaberite pocetna polja pesaka")
 
@@ -49,7 +51,7 @@ class Game:
         self.playerSymbol = playerSymbol
         self.draw()
 
-    def startGame(self):
+    def start(self):
         while True:
             turn = False
             while not turn:
@@ -63,7 +65,11 @@ class Game:
                 turn = self.playTurn(self.playerSymbol, pawnID, direction, steps, wall, wallX, wallY)
             
             self.clearConsole()
-            self.playerSymbol = 'O' if self.playerSymbol == 'X' else 'X'
+            # self.playerSymbol = 'O' if self.playerSymbol == 'X' else 'X'
+            a = self.minimax(self.states[-1], 2, -99999999, 99999999, False)
+            self.states.append(a[1])
+            print(f'Minimax result: {a[0]}')
+            # a[1].draw()
             self.draw()
             self.states[-1].getWallsLeft()
             if self.isEnd():
@@ -91,6 +97,29 @@ class Game:
             return True
         return False
 
+    def generateStates(self, state, player):
+        start = time.time()
+        states = []
+        for pawn in range(1, 3):
+            for dir in range(1, 10):
+                for wallColor in ['B', 'G']:
+                    for wallX in range(1, self.height+1):
+                        for wallY in range(1, self.width+1):
+                            new_state = copy.deepcopy(state)
+                            played = new_state.playTurn('X' if player == 1 else 'O', pawn, dir, 1, wallColor, wallX, wallY)
+                            if played:
+                                # new_state.draw()
+                                states.append(new_state)
+        
+        end = time.time()
+        print(f'Successfuly generated {len(states)} states in {end-start} seconds.');
+        return states
+        # Odabir piona: 1 ili 2
+        # Odabir smera: 1, 2, 3, 4, 5, 6, 7, 8 ili 9
+        # Odabir zida: B ili G
+        # Odabir reda za zid: 1 do height
+        # Odabir kolone za zid: 1 do width
+
     def draw(self):
         self.states[-1].draw()
 
@@ -111,3 +140,34 @@ class Game:
         if os.name in ('nt', 'dos'):  
             command = 'cls'
         os.system(command)
+
+    def minimax(self, state, depth, alpha, beta, maximizingPlayer):
+        if depth == 0 or self.isEnd():
+            return (random.randrange(-10, 10), state)
+        states = [] 
+        if maximizingPlayer:
+            states = self.generateStates(state, 'X')
+            print(f"[Maximizing] Generated states at depth: {depth}")
+            maxEval = -99999999
+            for s in states:
+                eval = self.minimax(s, depth - 1, alpha, beta, False)
+                maxEval = max(maxEval, eval[0])
+                if maxEval == eval[0]:
+                    out_state = copy.deepcopy(s)
+                alpha = max(alpha, eval[0])
+                if beta <= alpha:
+                    break
+            return (maxEval, out_state)
+        else:
+            states = self.generateStates(state, 'O')
+            print(f"[Minimizing] Generated states at depth: {depth}")
+            minEval = 99999999
+            for s in states:
+                eval = self.minimax(s, depth - 1, alpha, beta, True)
+                minEval = min(minEval, eval[0])
+                if minEval == eval[0]:
+                    out_state = copy.deepcopy(s)
+                beta = min(beta, eval[0])
+                if beta <= alpha:
+                    break
+            return (minEval, out_state)
