@@ -66,10 +66,12 @@ class Game:
             
             self.clearConsole()
             # self.playerSymbol = 'O' if self.playerSymbol == 'X' else 'X'
-            a = self.minimax(self.states[-1], 2, -99999999, 99999999, False)
-            self.states.append(a[1])
-            print(f'Minimax result: {a[0]}')
-            # a[1].draw()
+            start = time.time()
+            print(f'Minimax started...')
+            result = self.minimax(self.states[-1], 2, -99999999, 99999999, False)
+            end = time.time()
+            print(f'Minimax finished in {end - start} seconds with result {result[0]}.')
+            self.states.append(result[1])
             self.draw()
             self.states[-1].getWallsLeft()
             if self.isEnd():
@@ -106,7 +108,7 @@ class Game:
                     for wallX in range(1, self.height+1):
                         for wallY in range(1, self.width+1):
                             new_state = copy.deepcopy(state)
-                            played = new_state.playTurn('X' if player == 1 else 'O', pawn, dir, 1, wallColor, wallX, wallY)
+                            played = new_state.playTurn(player, pawn, dir, 1, wallColor, wallX, wallY)
                             if played:
                                 # new_state.draw()
                                 states.append(new_state)
@@ -143,7 +145,70 @@ class Game:
 
     def minimax(self, state, depth, alpha, beta, maximizingPlayer):
         if depth == 0 or self.isEnd():
-            return (random.randrange(-10, 10), state)
+            return (random.randrange(-50, 50), copy.deepcopy(state))
+        states = [] 
+        if maximizingPlayer:
+            maxEval = -99999999
+            shouldBreak = False
+            for pawn in range(1, 3):
+                if shouldBreak:
+                    break;
+                for dir in range(1, 10):
+                    if shouldBreak:
+                        break;
+                    for wallColor in ['B', 'G']:
+                        if shouldBreak:
+                            break;
+                        for wallX in range(1, self.height+1):
+                            if shouldBreak:
+                                break;
+                            for wallY in range(1, self.width+1):    
+                                new_state = copy.deepcopy(state)
+                                if new_state.playTurn('X', pawn, dir, 1, wallColor, wallX, wallY):            
+                                    eval = self.minimax(new_state, depth - 1, alpha, beta, False)
+                                    maxEval = max(maxEval, eval[0])
+                                    if maxEval == eval[0]:
+                                        out_state = copy.deepcopy(new_state)
+                                    alpha = max(alpha, eval[0])
+                                    if beta <= alpha:
+                                        shouldBreak = True
+                                        break;
+            return (maxEval, out_state)
+        else:
+            minEval = 99999999
+            shouldBreak = False
+            for pawn in range(1, 3):
+                if shouldBreak:
+                    break;
+                for dir in range(1, 10):
+                    if shouldBreak:
+                        break;
+                    for wallColor in ['B', 'G']:
+                        if shouldBreak:
+                            break;
+                        for wallX in range(1, self.height+1):
+                            if shouldBreak:
+                                break;
+                            for wallY in range(1, self.width+1):
+                                new_state = copy.deepcopy(state)
+                                if new_state.playTurn('O', pawn, dir, 1, wallColor, wallX, wallY):            
+                                    eval = self.minimax(new_state, depth - 1, alpha, beta, True)
+                                    minEval = min(minEval, eval[0])
+                                    if minEval == eval[0]:
+                                        out_state = copy.deepcopy(new_state)
+                                    beta = min(beta, eval[0])
+                                    if beta <= alpha:
+                                        shouldBreak = True
+                                        break;
+            return (minEval, out_state)
+
+
+
+'''
+
+    def minimax(self, state, depth, alpha, beta, maximizingPlayer):
+        if depth == 0 or self.isEnd():
+            return (random.randrange(-10, 10), copy.deepcopy(state))
         states = [] 
         if maximizingPlayer:
             states = self.generateStates(state, 'X')
@@ -171,3 +236,5 @@ class Game:
                 if beta <= alpha:
                     break
             return (minEval, out_state)
+
+'''            

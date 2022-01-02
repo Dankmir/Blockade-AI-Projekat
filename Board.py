@@ -50,6 +50,7 @@ class Board:
             return (p2[0], p2[1]) in self.graph[(p1[0], p1[1])]
 
     def draw(self):
+        self.getWallsLeft()
         c = 0
         print('    ', end='')
         print(*self.symbols[:self.width], sep='   ')
@@ -104,7 +105,7 @@ class Board:
         
     def placeWallHorizontal(self, x, y):
         if not self.checkGraphConnection((x, y), (x+1, y)) or not self.checkGraphConnection((x, y), (x+1, y+1)) or not self.checkGraphConnection((x, y+1), (x+1, y+1)):
-            # print(Fore.RED + "There is already a wall." + Style.RESET_ALL)
+            print(Fore.RED + "There is already a wall." + Style.RESET_ALL)
             return False
 
         self.removeGraphConnectionsHorizontal(x, y)
@@ -112,7 +113,7 @@ class Board:
 
     def placeWallVertical(self, x, y):
         if not self.checkGraphConnection((x, y), (x, y+1)) or not self.checkGraphConnection((x, y), (x+1, y+1)) or not self.checkGraphConnection((x+1, y), (x+1, y+1)):
-            # print(Fore.RED + "There is already a wall" + Style.RESET_ALL)
+            print(Fore.RED + "There is already a wall" + Style.RESET_ALL)
             return False
 
         self.removeGraphConnectionsVertical(x, y)
@@ -249,22 +250,20 @@ class Board:
                 wallPlaced = self.placeWallVertical(wallX - 1, wallY - 1)
                 if wallPlaced:
                     self.walls[wallIndex][0] -= 1
-                    # self.getWallsLeft()
                     if self.checkWallsVertical(wallX - 1 , wallY - 1):
                         anyPathBlocked = self.checkIfPathIsBlocked(playerIndex, playerPos)
             else:
-                # print(Fore.RED + f"[Player {playerIndex+1}] No {Fore.GREEN}green{Style.RESET_ALL} walls left." + Style.RESET_ALL)
+                print(Fore.RED + f"[Player {playerIndex+1}] No {Fore.GREEN}green{Style.RESET_ALL} walls left." + Style.RESET_ALL)
                 noWallsLeft = True
         elif wallColor == 'B':
             if self.walls[wallIndex][1] > 0:
                 wallPlaced = self.placeWallHorizontal(wallX - 1, wallY - 1)
                 if wallPlaced:
                     self.walls[wallIndex][1] -= 1
-                    # self.getWallsLeft()
                     if self.checkWallsHorizontal(wallX - 1 , wallY - 1):
                         anyPathBlocked = self.checkIfPathIsBlocked(playerIndex, playerPos)
             else:
-                # print(Fore.RED + f"[Player {playerIndex+1}] No {Fore.CYAN}blue{Style.RESET_ALL} walls left." + Style.RESET_ALL)
+                print(Fore.RED + f"[Player {playerIndex+1}] No {Fore.CYAN}blue{Style.RESET_ALL} walls left." + Style.RESET_ALL)
                 noWallsLeft = True
         
         # if wallPlaced and self.checkWallsHorizontal(wallX - 1 , wallY - 1):
