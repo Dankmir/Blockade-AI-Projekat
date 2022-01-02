@@ -8,7 +8,7 @@ import random
 class Game:
     def __init__(self):
         self.clearConsole()
-
+        
         startPositions = []
 
         print("Izaberite igraca")
@@ -49,6 +49,7 @@ class Game:
         self.states = []
         self.states.append(Board(m, n, startPositions, numOfWalls, playerSymbol))
         self.playerSymbol = playerSymbol
+        self.movesTable = self.generatePossibleMoves()
         self.draw()
 
     def start(self):
@@ -146,62 +147,44 @@ class Game:
     def minimax(self, state, depth, alpha, beta, maximizingPlayer):
         if depth == 0 or self.isEnd():
             return (random.randrange(-50, 50), copy.deepcopy(state))
-        states = [] 
+
         if maximizingPlayer:
             maxEval = -99999999
-            shouldBreak = False
-            for pawn in range(1, 3):
-                if shouldBreak:
-                    break;
-                for dir in range(1, 10):
-                    if shouldBreak:
+            for move in self.movesTable:   
+                new_state = copy.deepcopy(state)
+                if new_state.playTurn('X', move[0], move[1], 1, move[2], move[3], move[4]):            
+                    eval = self.minimax(new_state, depth - 1, alpha, beta, False)
+                    maxEval = max(maxEval, eval[0])
+                    if maxEval == eval[0]:
+                        out_state = copy.deepcopy(new_state)
+                    alpha = max(alpha, eval[0])
+                    if beta <= alpha:
                         break;
-                    for wallColor in ['B', 'G']:
-                        if shouldBreak:
-                            break;
-                        for wallX in range(1, self.height+1):
-                            if shouldBreak:
-                                break;
-                            for wallY in range(1, self.width+1):    
-                                new_state = copy.deepcopy(state)
-                                if new_state.playTurn('X', pawn, dir, 1, wallColor, wallX, wallY):            
-                                    eval = self.minimax(new_state, depth - 1, alpha, beta, False)
-                                    maxEval = max(maxEval, eval[0])
-                                    if maxEval == eval[0]:
-                                        out_state = copy.deepcopy(new_state)
-                                    alpha = max(alpha, eval[0])
-                                    if beta <= alpha:
-                                        shouldBreak = True
-                                        break;
             return (maxEval, out_state)
         else:
             minEval = 99999999
-            shouldBreak = False
-            for pawn in range(1, 3):
-                if shouldBreak:
-                    break;
-                for dir in range(1, 10):
-                    if shouldBreak:
+            for move in self.movesTable:   
+                new_state = copy.deepcopy(state)
+                if new_state.playTurn('O', move[0], move[1], 1, move[2], move[3], move[4]):            
+                    eval = self.minimax(new_state, depth - 1, alpha, beta, True)
+                    minEval = min(minEval, eval[0])
+                    if minEval == eval[0]:
+                        out_state = copy.deepcopy(new_state)
+                    beta = min(beta, eval[0])
+                    if beta <= alpha:
                         break;
-                    for wallColor in ['B', 'G']:
-                        if shouldBreak:
-                            break;
-                        for wallX in range(1, self.height+1):
-                            if shouldBreak:
-                                break;
-                            for wallY in range(1, self.width+1):
-                                new_state = copy.deepcopy(state)
-                                if new_state.playTurn('O', pawn, dir, 1, wallColor, wallX, wallY):            
-                                    eval = self.minimax(new_state, depth - 1, alpha, beta, True)
-                                    minEval = min(minEval, eval[0])
-                                    if minEval == eval[0]:
-                                        out_state = copy.deepcopy(new_state)
-                                    beta = min(beta, eval[0])
-                                    if beta <= alpha:
-                                        shouldBreak = True
-                                        break;
             return (minEval, out_state)
 
+
+    def generatePossibleMoves(self):
+        movesTable = []
+        for pawn in range(1, 3):
+                for dir in range(1, 10):
+                    for wallColor in ['B', 'G']:
+                        for wallX in range(1, self.height+1):
+                            for wallY in range(1, self.width+1):
+                                movesTable.append((pawn, dir, wallColor, wallX, wallY))    
+        return movesTable
 
 
 '''
@@ -238,3 +221,4 @@ class Game:
             return (minEval, out_state)
 
 '''            
+
