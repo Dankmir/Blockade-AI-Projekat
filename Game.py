@@ -66,6 +66,7 @@ class Game:
                 turn = self.playTurn(self.playerSymbol, pawnID, direction, steps, wall, wallX, wallY)
             
             self.clearConsole()
+
             # self.playerSymbol = 'O' if self.playerSymbol == 'X' else 'X'
             start = time.time()
             print(f'Minimax started...')
@@ -75,6 +76,7 @@ class Game:
             self.states.append(result[1])
             self.draw()
             self.states[-1].getWallsLeft()
+            
             if self.isEnd():
                 break
 
@@ -117,11 +119,6 @@ class Game:
         end = time.time()
         print(f'Successfuly generated {len(states)} states in {end-start} seconds.');
         return states
-        # Odabir piona: 1 ili 2
-        # Odabir smera: 1, 2, 3, 4, 5, 6, 7, 8 ili 9
-        # Odabir zida: B ili G
-        # Odabir reda za zid: 1 do height
-        # Odabir kolone za zid: 1 do width
 
     def draw(self):
         self.states[-1].draw()
@@ -155,8 +152,7 @@ class Game:
                 if new_state.playTurn('X', move[0], move[1], 1, move[2], move[3], move[4]):            
                     eval = self.minimax(new_state, depth - 1, alpha, beta, False)
                     maxEval = max(maxEval, eval[0])
-                    if maxEval == eval[0]:
-                        out_state = copy.deepcopy(new_state)
+                    out_state = copy.deepcopy(new_state if maxEval == eval[0] else state)
                     alpha = max(alpha, eval[0])
                     if beta <= alpha:
                         break;
@@ -168,8 +164,7 @@ class Game:
                 if new_state.playTurn('O', move[0], move[1], 1, move[2], move[3], move[4]):            
                     eval = self.minimax(new_state, depth - 1, alpha, beta, True)
                     minEval = min(minEval, eval[0])
-                    if minEval == eval[0]:
-                        out_state = copy.deepcopy(new_state)
+                    out_state = copy.deepcopy(new_state if minEval == eval[0] else state)
                     beta = min(beta, eval[0])
                     if beta <= alpha:
                         break;
