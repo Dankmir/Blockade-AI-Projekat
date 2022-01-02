@@ -1,3 +1,4 @@
+from os import system
 from Player import Player
 from colorama import *
 from functools import *
@@ -243,7 +244,7 @@ class Board:
         noWallsLeft = False
         anyPathBlocked = False
         if not playerMoved:
-            # print(Fore.RED + "Unable to move player!" + Style.RESET_ALL)
+            print(Fore.RED + "Unable to move player!" + Style.RESET_ALL)
             return False
         if wallColor == 'G':
             if self.walls[wallIndex][0] > 0:
@@ -253,7 +254,7 @@ class Board:
                     if self.checkWallsVertical(wallX - 1 , wallY - 1):
                         anyPathBlocked = self.checkIfPathIsBlocked(playerIndex, playerPos)
             else:
-                print(Fore.RED + f"[Player {playerIndex+1}] No {Fore.GREEN}green{Style.RESET_ALL} walls left." + Style.RESET_ALL)
+                print(f"[{Fore.YELLOW if playerIndex+1 < 2 else Fore.RED}Player {playerIndex+1}{Style.RESET_ALL}]{Fore.RED} No {Fore.GREEN}green{Fore.RED} walls left." + Style.RESET_ALL)
                 noWallsLeft = True
         elif wallColor == 'B':
             if self.walls[wallIndex][1] > 0:
@@ -263,13 +264,9 @@ class Board:
                     if self.checkWallsHorizontal(wallX - 1 , wallY - 1):
                         anyPathBlocked = self.checkIfPathIsBlocked(playerIndex, playerPos)
             else:
-                print(Fore.RED + f"[Player {playerIndex+1}] No {Fore.CYAN}blue{Style.RESET_ALL} walls left." + Style.RESET_ALL)
+                print(f"[{Fore.YELLOW if playerIndex+1 < 2 else Fore.RED}Player {playerIndex+1}{Style.RESET_ALL}]{Fore.RED} No {Fore.CYAN}blue{Fore.RED} walls left." + Style.RESET_ALL)
                 noWallsLeft = True
         
-        # if wallPlaced and self.checkWallsHorizontal(wallX - 1 , wallY - 1):
-        #     print("Horizontal walls exist.")
-        #     anyPathBlocked = self.checkIfPathIsBlocked(playerIndex, playerPos)
-
         if (not wallPlaced or noWallsLeft) and playerMoved or anyPathBlocked:
             self.movePlayer(10 - dir, steps, playerIndex)
             return False
@@ -326,7 +323,6 @@ class Board:
                         break
                     visited.add(dest)
                     queue_nodes.put(dest)
-            
         return found_dest
 
     def getWallsLeft(self):

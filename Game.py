@@ -18,7 +18,7 @@ class Game:
         m = self.getInput("Broj kolona table: ", 5, 22)
         n = self.getInput("Broj vrsta table: ", 5, 28)
 
-        numOfWalls = self.getInput("Izaberite broj zidova (preporuceno je 9 a maksimalno 18): ", 4, 18)
+        numOfWalls = self.getInput("Izaberite broj zidova (preporuceno je 9 a maksimalno 18): ", 1, 18)
 
         print("Izaberite pocetna polja pesaka")
 
@@ -174,7 +174,6 @@ class Game:
                     if beta <= alpha:
                         break;
             return (minEval, out_state)
-
 
     def generatePossibleMoves(self):
         movesTable = []
