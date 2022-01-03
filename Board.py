@@ -15,6 +15,7 @@ class Board:
         self.startNodes = startPositions
         self.walls = [[numOfWalls, numOfWalls], [numOfWalls, numOfWalls]]
         self.graph = dict()
+        self.lastMovePlayed = []
 
         self.initializeBoardGraph()
 
@@ -109,7 +110,7 @@ class Board:
         
     def placeWallHorizontal(self, x, y):
         if not self.checkGraphConnection((x, y), (x+1, y)) or not self.checkGraphConnection((x, y), (x+1, y+1)) or not self.checkGraphConnection((x, y+1), (x+1, y+1)):
-            print(Fore.RED + "There is already a wall." + Style.RESET_ALL)
+            # print(Fore.RED + "There is already a wall." + Style.RESET_ALL)
             return False
 
         self.removeGraphConnectionsHorizontal(x, y)
@@ -117,7 +118,7 @@ class Board:
 
     def placeWallVertical(self, x, y):
         if not self.checkGraphConnection((x, y), (x, y+1)) or not self.checkGraphConnection((x, y), (x+1, y+1)) or not self.checkGraphConnection((x+1, y), (x+1, y+1)):
-            print(Fore.RED + "There is already a wall" + Style.RESET_ALL)
+            # print(Fore.RED + "There is already a wall" + Style.RESET_ALL)
             return False
 
         self.removeGraphConnectionsVertical(x, y)
@@ -184,22 +185,22 @@ class Board:
             if p1 in self.graph[p2]:
                 self.graph[p2].remove(p1)
                 self.graph[p1].remove(p2)  
-                print(f'Connection {p1} - {p2} removed.')     
+                # print(f'Connection {p1} - {p2} removed.')     
 
     def playTurn(self, player, pawn, dir, steps, wallColor, wallX, wallY):
         playerIndex = (0 if player == 'X' else 2) + pawn-1
-        wallIndex = 0 if player == 'X' else 1
         playerPos = (self.players[playerIndex].x, self.players[playerIndex].y)
-        playerMoved = self.movePlayer(dir, steps, playerIndex)
         
+        if not self.movePlayer(dir, steps, playerIndex):
+            # print(Fore.RED + "Unable to move player!" + Style.RESET_ALL)
+            return False
+
         wallPlaced = False
         noWallsLeft = False
         anyPathBlocked = False
-        if not playerMoved:
-            print(Fore.RED + "Unable to move player!" + Style.RESET_ALL)
-            return False
-            
+        wallIndex = 0 if player == 'X' else 1
         colorIndex = 0 if wallColor == 'G' else 1
+
         if self.walls[wallIndex][colorIndex] > 0:
             wallPlaced = self.placeWallVertical(wallX - 1, wallY - 1) if colorIndex == 0 else self.placeWallHorizontal(wallX - 1, wallY - 1)
             if wallPlaced:
@@ -209,13 +210,14 @@ class Board:
         else:
             playerSymbol = f'{Fore.YELLOW}X' if playerIndex+1 < 2 else f'{Fore.RED}O'
             wall = f'{Fore.GREEN}green' if wallColor == 'G' else f'{Fore.CYAN}blue'
-            print(f"[{playerSymbol}{Style.RESET_ALL}]{Fore.RED} No {wall} {Fore.RED} walls left." + Style.RESET_ALL)
+            # print(f"[{playerSymbol}{Style.RESET_ALL}]{Fore.RED} No {wall} {Fore.RED} walls left." + Style.RESET_ALL)
             noWallsLeft = True
         
-        if (not wallPlaced and not noWallsLeft) and playerMoved or anyPathBlocked:
+        if (not wallPlaced and not noWallsLeft) or anyPathBlocked:
             self.movePlayer(10 - dir, steps, playerIndex)
             return False
 
+        self.lastMovePlayed = [player, pawn, dir, steps, wallColor, wallX, wallY]
         return True
 
     def checkWallsHorizontal(self, x, y):

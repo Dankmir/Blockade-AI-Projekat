@@ -79,11 +79,12 @@ class Player:
 
     def validateMove(self, x, y, boardWidth, boardHeight):
         if len(list(filter(lambda a: a.x == x and a.y == y, self.board.players))) > 0:
-            print(Fore.RED + "Invalid move. (Field not empty)" + Style.RESET_ALL)
-            return False    
+            if len(list(filter(lambda a: a[0] == x and a[1] == y, self.board.startNodes))) == 0:
+            # print(Fore.RED + "Invalid move. (Field not empty)" + Style.RESET_ALL)
+                return False    
 
         if x >= boardHeight or x < 0 or y >= boardWidth or y < 0:
-            print(Fore.RED + "Invalid move. (Position out of board)" + Style.RESET_ALL)
+            # print(Fore.RED + "Invalid move. (Position out of board)" + Style.RESET_ALL)
             return False
         return True
 

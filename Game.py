@@ -15,8 +15,8 @@ class Game:
         playerSymbol = self.getInputString("X ili O: ", ['X', 'O'])
 
         print("Izaberite velicinu table, preporuceno je 11x14 a maksimalno dozvoljeno 22x28")
-        m = self.getInput("Broj kolona table: ", 5, 22)
-        n = self.getInput("Broj vrsta table: ", 5, 28)
+        m = self.getInput("Broj kolona table: ", 3, 22)
+        n = self.getInput("Broj vrsta table: ", 3, 28)
 
         numOfWalls = self.getInput("Izaberite broj zidova (preporuceno je 9 a maksimalno 18): ", 1, 18)
 
@@ -50,6 +50,7 @@ class Game:
         self.states.append(Board(m, n, startPositions, numOfWalls, playerSymbol))
         self.playerSymbol = playerSymbol
         self.movesTable = self.generatePossibleMoves()
+        # self.removeWallMoves()
         self.draw()
 
     def start(self):
@@ -64,19 +65,25 @@ class Game:
                 wallY     = self.getInput("Unesite broj kolone u kojoj želite da smestite zid: ", 1, self.width)
 
                 turn = self.playTurn(self.playerSymbol, pawnID, direction, steps, wall, wallX, wallY)
-            
+                if turn:
+                    self.removeWallMove(self.states[-1].lastMovePlayed[4:7])
+
             self.clearConsole()
 
             # self.playerSymbol = 'O' if self.playerSymbol == 'X' else 'X'
-            start = time.time()
+            
             print(f'Minimax started...')
-            result = self.minimax(self.states[-1], 2, -99999999, 99999999, False)
-            end = time.time()
+            start   = time.time()
+            result  = self.minimax(self.states[-1], 2, -99999999, 99999999, False)
+            end     = time.time()
             print(f'Minimax finished in {end - start} seconds with result {result[0]}.')
+
+
             self.states.append(result[1])
             self.draw()
             self.states[-1].getWallsLeft()
-            
+            self.removeWallMove(self.states[-1].lastMovePlayed[4:7])
+
             if self.isEnd():
                 break
 
@@ -143,7 +150,7 @@ class Game:
 
     def minimax(self, state, depth, alpha, beta, maximizingPlayer):
         if depth == 0 or self.isEnd():
-            return (random.randrange(-50, 50), copy.deepcopy(state))
+            return (random.randrange(-100, 100), copy.deepcopy(state))
 
         if maximizingPlayer:
             maxEval = -99999999
@@ -152,9 +159,14 @@ class Game:
                 if new_state.playTurn('X', move[0], move[1], 1, move[2], move[3], move[4]):            
                     eval = self.minimax(new_state, depth - 1, alpha, beta, False)
                     maxEval = max(maxEval, eval[0])
-                    out_state = copy.deepcopy(new_state if maxEval == eval[0] else state)
+                    if maxEval == eval[0]:
+                        print(f"[Maximizing] New maxEval = {maxEval}")
+                        out_state = copy.deepcopy(new_state)
                     alpha = max(alpha, eval[0])
+                    if alpha == eval[0]:
+                        print(f'[Maximizing] New Alpha = {alpha}')
                     if beta <= alpha:
+                        print(f"[Maximizing] Pruned. Alpha = {alpha}; beta = {beta}")
                         break;
             return (maxEval, out_state)
         else:
@@ -164,9 +176,14 @@ class Game:
                 if new_state.playTurn('O', move[0], move[1], 1, move[2], move[3], move[4]):            
                     eval = self.minimax(new_state, depth - 1, alpha, beta, True)
                     minEval = min(minEval, eval[0])
-                    out_state = copy.deepcopy(new_state if minEval == eval[0] else state)
+                    if minEval == eval[0]:
+                        print(f"[Minimizing] New minEval = {minEval}")
+                        out_state = copy.deepcopy(new_state)
                     beta = min(beta, eval[0])
+                    if beta == eval[0]:
+                        print(f'[Minimizing] New Beta = {beta}')
                     if beta <= alpha:
+                        print(f"[Minimizing] Pruned. Alpha = {alpha}; beta = {beta}")
                         break;
             return (minEval, out_state)
 
@@ -180,6 +197,16 @@ class Game:
                                 movesTable.append((pawn, dir, wallColor, wallX, wallY))    
         return movesTable
 
+    def removeWallMove(self, input):
+        wallMoves = list(filter(lambda x : x[2] == input[0] and x[3] == input[1] and x[4] == input[2], self.movesTable))
+        for move in wallMoves:
+            self.movesTable.remove(move)
+
+    def removeWallMoves(self):
+        wallMoves = list(filter(lambda x : x[2] == 'G' or (x[2] == 'B' and x[3] != 1 or x[4] != 1), self.movesTable))
+        for move in wallMoves:
+            self.movesTable.remove(move)
+        return wallMoves
 
 '''
 
