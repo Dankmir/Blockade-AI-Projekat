@@ -137,7 +137,7 @@ class Board:
 
         if not self.checkGraphConnection((x, y+2), (x+1, y+2)): # Desno
             self.removeConnection((x, y+1), (x+1, y+2))
-            self.removeConnection((x+1, y+1), (x+2, y))
+            self.removeConnection((x+1, y+1), (x, y+2))
 
         # Dijagonale kada postoji veza sa vertikalnim zidom
         if not self.checkGraphConnection((x, y+1), (x, y+2)): # Desno gore

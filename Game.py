@@ -42,21 +42,22 @@ class Game:
         y = self.getInput("y = ", 1, m)
         startPositions.append([x - 1, y - 1])
 
-        self.clearConsole()
-
         self.width = m
         self.height = n
         self.states = []
         self.states.append(Board(m, n, startPositions, numOfWalls, playerSymbol))
         self.playerSymbol = playerSymbol
-        self.movesTable = self.generatePossibleMoves()
-        # self.removeWallMoves()
+        self.turn = 'X'
+        self.aiMovementMoves = self.generateMovementMoves()
+        self.aiWallPlacementPositions = self.generateWallMoves()
+        
+        self.clearConsole()
         self.draw()
 
     def start(self):
         while True:
             turn = False
-            while not turn:
+            while not turn and self.turn == self.playerSymbol:
                 pawnID    = self.getInput("Unesite sa kojim pionom hoćete da igrate: ", 1, 2)
                 direction = self.getInput("Unesite smer kretanja: ", 1, 9)
                 steps     = self.getInput("Unesite broj koraka: ", 1, 2) if direction not in [7, 9, 1, 3] else 1
@@ -66,23 +67,24 @@ class Game:
 
                 turn = self.playTurn(self.playerSymbol, pawnID, direction, steps, wall, wallX, wallY)
                 if turn:
-                    self.removeWallMove(self.states[-1].lastMovePlayed[4:7])
-
+                    self.removeWallMove(wallX, wallY)
+                    self.turn = 'O' if self.turn == 'X' else 'X'
+                    
             self.clearConsole()
 
             # self.playerSymbol = 'O' if self.playerSymbol == 'X' else 'X'
             
             print(f'Minimax started...')
             start   = time.time()
-            result  = self.minimax(self.states[-1], 2, -99999999, 99999999, False)
+            result  = self.minimax(self.states[-1], 2, -99999999, 99999999, self.playerSymbol == 'O')
             end     = time.time()
             print(f'Minimax finished in {end - start} seconds with result {result[0]}.')
-
 
             self.states.append(result[1])
             self.draw()
             self.states[-1].getWallsLeft()
-            self.removeWallMove(self.states[-1].lastMovePlayed[4:7])
+            self.removeWallMove(self.states[-1].lastMovePlayed[5], self.states[-1].lastMovePlayed[6])
+            self.turn = 'O' if self.turn == 'X' else 'X'
 
             if self.isEnd():
                 break
@@ -130,15 +132,6 @@ class Game:
     def draw(self):
         self.states[-1].draw()
 
-    def placeWallVertical(self, x, y):
-        self.states[-1].placeWallVertical(x-1, y-1)
-
-    def placeWallHorizontal(self, x, y):
-        self.states[-1].placeWallHorizontal(x-1, y-1)
-
-    def checkPath(self, p1, p2):
-        print(self.states[-1].checkPath(p1, p2))
-
     def isEnd(self):
         return self.states[-1].isEnd()
 
@@ -148,98 +141,68 @@ class Game:
             command = 'cls'
         os.system(command)
 
+    def generateMovementMoves(self):
+        moves = []
+        for pawn in [1, 2]:
+            for dir in [1, 2, 3, 4, 6, 7, 8, 9]:
+                moves.append((pawn, dir))
+        return moves
+
+    def generateWallMoves(self):
+        moves = []
+        for wallX in range(1, self.height):
+            for wallY in range(1, self.width):
+                moves.append((wallX, wallY))
+        return moves
+
+    def removeWallMove(self, x, y):
+        if (x, y) in self.aiWallPlacementPositions:
+            self.aiWallPlacementPositions.remove((x, y))
+    
+    def generateMove(self, player):
+        wallsLeft = self.states[-1].walls[0 if player == 'X' else 1]
+        for movement in self.aiMovementMoves:
+            if wallsLeft[0] > 0 or wallsLeft[1] > 0:
+                if wallsLeft[1] > 0:
+                    for wallPos in self.aiWallPlacementPositions:
+                        yield (movement[0], movement[1], 'B', wallPos[0], wallPos[1])
+                else:
+                    yield (movement[0], movement[1], 'B', 1, 1)
+                if wallsLeft[0] > 0:
+                    for wallPos in self.aiWallPlacementPositions:
+                        yield (movement[0], movement[1], 'G', wallPos[0], wallPos[1])
+                else:
+                    yield (movement[0], movement[1], 'G', 1, 1)
+            else:
+                yield (movement[0], movement[1], 'B', 1, 1)
+
     def minimax(self, state, depth, alpha, beta, maximizingPlayer):
         if depth == 0 or self.isEnd():
             return (random.randrange(-100, 100), copy.deepcopy(state))
 
         if maximizingPlayer:
             maxEval = -99999999
-            for move in self.movesTable:   
+            for move in self.generateMove('X'):   
                 new_state = copy.deepcopy(state)
                 if new_state.playTurn('X', move[0], move[1], 1, move[2], move[3], move[4]):            
                     eval = self.minimax(new_state, depth - 1, alpha, beta, False)
                     maxEval = max(maxEval, eval[0])
                     if maxEval == eval[0]:
-                        print(f"[Maximizing] New maxEval = {maxEval}")
                         out_state = copy.deepcopy(new_state)
                     alpha = max(alpha, eval[0])
-                    if alpha == eval[0]:
-                        print(f'[Maximizing] New Alpha = {alpha}')
                     if beta <= alpha:
-                        print(f"[Maximizing] Pruned. Alpha = {alpha}; beta = {beta}")
                         break;
             return (maxEval, out_state)
         else:
             minEval = 99999999
-            for move in self.movesTable:   
+            for move in self.generateMove('O'):   
                 new_state = copy.deepcopy(state)
                 if new_state.playTurn('O', move[0], move[1], 1, move[2], move[3], move[4]):            
                     eval = self.minimax(new_state, depth - 1, alpha, beta, True)
                     minEval = min(minEval, eval[0])
                     if minEval == eval[0]:
-                        print(f"[Minimizing] New minEval = {minEval}")
                         out_state = copy.deepcopy(new_state)
                     beta = min(beta, eval[0])
-                    if beta == eval[0]:
-                        print(f'[Minimizing] New Beta = {beta}')
                     if beta <= alpha:
-                        print(f"[Minimizing] Pruned. Alpha = {alpha}; beta = {beta}")
                         break;
             return (minEval, out_state)
-
-    def generatePossibleMoves(self):
-        movesTable = []
-        for pawn in range(1, 3):
-                for dir in range(1, 10):
-                    for wallColor in ['B', 'G']:
-                        for wallX in range(1, self.height+1):
-                            for wallY in range(1, self.width+1):
-                                movesTable.append((pawn, dir, wallColor, wallX, wallY))    
-        return movesTable
-
-    def removeWallMove(self, input):
-        wallMoves = list(filter(lambda x : x[2] == input[0] and x[3] == input[1] and x[4] == input[2], self.movesTable))
-        for move in wallMoves:
-            self.movesTable.remove(move)
-
-    def removeWallMoves(self):
-        wallMoves = list(filter(lambda x : x[2] == 'G' or (x[2] == 'B' and x[3] != 1 or x[4] != 1), self.movesTable))
-        for move in wallMoves:
-            self.movesTable.remove(move)
-        return wallMoves
-
-'''
-
-    def minimax(self, state, depth, alpha, beta, maximizingPlayer):
-        if depth == 0 or self.isEnd():
-            return (random.randrange(-10, 10), copy.deepcopy(state))
-        states = [] 
-        if maximizingPlayer:
-            states = self.generateStates(state, 'X')
-            print(f"[Maximizing] Generated states at depth: {depth}")
-            maxEval = -99999999
-            for s in states:
-                eval = self.minimax(s, depth - 1, alpha, beta, False)
-                maxEval = max(maxEval, eval[0])
-                if maxEval == eval[0]:
-                    out_state = copy.deepcopy(s)
-                alpha = max(alpha, eval[0])
-                if beta <= alpha:
-                    break
-            return (maxEval, out_state)
-        else:
-            states = self.generateStates(state, 'O')
-            print(f"[Minimizing] Generated states at depth: {depth}")
-            minEval = 99999999
-            for s in states:
-                eval = self.minimax(s, depth - 1, alpha, beta, True)
-                minEval = min(minEval, eval[0])
-                if minEval == eval[0]:
-                    out_state = copy.deepcopy(s)
-                beta = min(beta, eval[0])
-                if beta <= alpha:
-                    break
-            return (minEval, out_state)
-
-'''            
-
