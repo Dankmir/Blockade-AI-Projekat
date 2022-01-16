@@ -45,6 +45,7 @@ class Game:
         self.width = m
         self.height = n
         self.states = []
+        self.spawns = startPositions
         self.states.append(Board(m, n, startPositions, numOfWalls, playerSymbol))
         self.playerSymbol = playerSymbol
         self.turn = 'X'
@@ -60,12 +61,18 @@ class Game:
             while not turn and self.turn == self.playerSymbol:
                 pawnID    = self.getInput("Unesite sa kojim pionom hoćete da igrate: ", 1, 2)
                 direction = self.getInput("Unesite smer kretanja: ", 1, 9)
-                steps     = self.getInput("Unesite broj koraka: ", 1, 2) if direction not in [7, 9, 1, 3] else 1
-                wall      = self.getInputString("Boja zida koji se postavlja (B ili G): ", ['B', 'G'])
-                wallX     = self.getInput("Unesite broj reda u kom želite da smestite zid: ", 1, self.height)
-                wallY     = self.getInput("Unesite broj kolone u kojoj želite da smestite zid: ", 1, self.width)
+                #steps     = self.getInput("Unesite broj koraka: ", 1, 2) if direction not in [7, 9, 1, 3] else 1
+                wallsLeft = self.states[-1].walls[0 if self.turn == 'X' else 1]
+                if wallsLeft[0] or wallsLeft[1]:
+                    wall      = self.getInputString("Boja zida koji se postavlja (B ili G): ", ['B', 'G'])
+                    wallX     = self.getInput("Unesite broj reda u kom želite da smestite zid: ", 1, self.height)
+                    wallY     = self.getInput("Unesite broj kolone u kojoj želite da smestite zid: ", 1, self.width)
+                else:
+                    wall = 'B'
+                    wallX = 1
+                    wallY = 1
 
-                turn = self.playTurn(self.playerSymbol, pawnID, direction, steps, wall, wallX, wallY)
+                turn = self.playTurn(self.playerSymbol, pawnID, direction, 2, wall, wallX, wallY)
                 if turn:
                     self.removeWallMove(wallX, wallY)
                     self.turn = 'O' if self.turn == 'X' else 'X'
@@ -159,32 +166,63 @@ class Game:
         if (x, y) in self.aiWallPlacementPositions:
             self.aiWallPlacementPositions.remove((x, y))
     
-    def generateMove(self, player):
+    def generateMove(self, player, state):
+        enemyPos = state.getEnemyPos(player)
+        spawnPos = self.spawns[0:2] if player == 'X' else self.spawns[2:4]
         wallsLeft = self.states[-1].walls[0 if player == 'X' else 1]
+        wallPositions = self.checkWallPlacement(enemyPos, spawnPos)
         for movement in self.aiMovementMoves:
             if wallsLeft[0] > 0 or wallsLeft[1] > 0:
                 if wallsLeft[1] > 0:
                     for wallPos in self.aiWallPlacementPositions:
-                        yield (movement[0], movement[1], 'B', wallPos[0], wallPos[1])
+                        if wallPos in wallPositions:
+                            yield (movement[0], movement[1], 'B', wallPos[0], wallPos[1])
                 else:
                     yield (movement[0], movement[1], 'B', 1, 1)
                 if wallsLeft[0] > 0:
                     for wallPos in self.aiWallPlacementPositions:
-                        yield (movement[0], movement[1], 'G', wallPos[0], wallPos[1])
+                        if wallPos in wallPositions:
+                            yield (movement[0], movement[1], 'G', wallPos[0], wallPos[1])
                 else:
                     yield (movement[0], movement[1], 'G', 1, 1)
             else:
                 yield (movement[0], movement[1], 'B', 1, 1)
 
+    def checkWallPlacement(self, enemyPos, spawnPos):
+
+        enemy1X = enemyPos[0][0]
+        enemy1Y = enemyPos[0][1]
+        enemy2X = enemyPos[1][0]
+        enemy2Y = enemyPos[1][1]
+        spawn1X = spawnPos[0][0]
+        spawn1Y = spawnPos[0][1]
+        spawn2X = spawnPos[1][0]
+        spawn2Y = spawnPos[1][1]
+
+        minX = min(enemy1X, enemy2X, spawn1X, spawn2X)
+        minY = min(enemy1Y, enemy2Y, spawn1Y, spawn2Y)
+        maxX = max(enemy1X, enemy2X, spawn1X, spawn2X)
+        maxY = max(enemy1Y, enemy2Y, spawn1Y, spawn2Y)
+
+        positions = []
+        for x in range(minX, maxX):
+            for y in range(minY, maxY):
+                positions.append((x+1, y+1))
+
+        return positions
+
+        return wallX >= minX and wallX <= maxX and wallY >= minY and wallY <= maxY
+
     def minimax(self, state, depth, alpha, beta, maximizingPlayer):
         if depth == 0 or self.isEnd():
-            return (random.randrange(-100, 100), copy.deepcopy(state))
+            return self.evaluate(copy.deepcopy(state), 'X' if maximizingPlayer else 'O')
 
         if maximizingPlayer:
+            print("Started max")
             maxEval = -99999999
-            for move in self.generateMove('X'):   
+            for move in self.generateMove('X', state):   
                 new_state = copy.deepcopy(state)
-                if new_state.playTurn('X', move[0], move[1], 1, move[2], move[3], move[4]):            
+                if new_state.playTurn('X', move[0], move[1], 2, move[2], move[3], move[4]):            
                     eval = self.minimax(new_state, depth - 1, alpha, beta, False)
                     maxEval = max(maxEval, eval[0])
                     if maxEval == eval[0]:
@@ -194,10 +232,11 @@ class Game:
                         break;
             return (maxEval, out_state)
         else:
+            print("Started min")
             minEval = 99999999
-            for move in self.generateMove('O'):   
+            for move in self.generateMove('O', state):   
                 new_state = copy.deepcopy(state)
-                if new_state.playTurn('O', move[0], move[1], 1, move[2], move[3], move[4]):            
+                if new_state.playTurn('O', move[0], move[1], 2, move[2], move[3], move[4]):            
                     eval = self.minimax(new_state, depth - 1, alpha, beta, True)
                     minEval = min(minEval, eval[0])
                     if minEval == eval[0]:
@@ -206,3 +245,7 @@ class Game:
                     if beta <= alpha:
                         break;
             return (minEval, out_state)
+
+    def evaluate(self, state, player):
+        eval = random.randrange(-100, 100)
+        return (eval, state)

@@ -106,7 +106,16 @@ class Board:
             return '   '
 
     def movePlayer(self, dir, distance, player):
-        return self.players[player].move(dir, distance, self.width, self.height)
+        moveWithTwo = False
+        isNotDiagonal = dir not in [1, 3, 7, 9]
+
+        if isNotDiagonal:
+            moveWithTwo = self.players[player].move(dir, 2, self.width, self.height)
+
+        if not isNotDiagonal or not moveWithTwo:
+            moveWithOne = self.players[player].move(dir, 1, self.width, self.height)
+
+        return moveWithTwo or moveWithOne 
         
     def placeWallHorizontal(self, x, y):
         if not self.checkGraphConnection((x, y), (x+1, y)) or not self.checkGraphConnection((x, y), (x+1, y+1)) or not self.checkGraphConnection((x, y+1), (x+1, y+1)):
@@ -281,3 +290,11 @@ class Board:
     def getWallsLeft(self):
         print(f'X walls: {Fore.CYAN}{self.walls[0][1]}{Style.RESET_ALL}, {Fore.GREEN}{self.walls[0][0]}{Style.RESET_ALL}')
         print(f'O walls: {Fore.CYAN}{self.walls[1][1]}{Style.RESET_ALL}, {Fore.GREEN}{self.walls[1][0]}{Style.RESET_ALL}')
+
+    def getEnemyPos(self, player):
+        indices = [2, 3] if player == 'X' else [0, 1]
+        pos = []
+        for i in indices:
+            pos.append((self.players[i].x, self.players[i].y))
+        
+        return pos
