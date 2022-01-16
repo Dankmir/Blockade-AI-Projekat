@@ -3,6 +3,8 @@ from Player import Player
 from colorama import *
 from functools import *
 import queue
+import math
+import heapq as hq
 
 class Board:
     symbols = ['1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S' ]
@@ -278,6 +280,7 @@ class Board:
 
         while (not found_dest) and (not queue_nodes.empty()):
             node = queue_nodes.get()
+
             for dest in self.graph[node]:
                 if dest not in visited:
                     if dest == end:
@@ -286,6 +289,23 @@ class Board:
                     visited.add(dest)
                     queue_nodes.put(dest)
         return found_dest
+    
+    def findPath(self, start, goal):
+        explored = []
+        queue = [[start]]
+        while queue:
+            path = queue.pop(0)
+            node = path[-1]
+            if node not in explored:
+                neighbours = self.graph[node]
+                for neighbour in neighbours:
+                    new_path = list(path)
+                    new_path.append(neighbour)
+                    queue.append(new_path)
+                    if neighbour == goal:
+                        return new_path
+                explored.append(node)
+        return [start, start]
 
     def getWallsLeft(self):
         print(f'X walls: {Fore.CYAN}{self.walls[0][1]}{Style.RESET_ALL}, {Fore.GREEN}{self.walls[0][0]}{Style.RESET_ALL}')
@@ -298,3 +318,8 @@ class Board:
             pos.append((self.players[i].x, self.players[i].y))
         
         return pos
+
+    def getPlayerPos(self, player):
+        return self.getEnemyPos('O' if player == 'X' else 'X')
+
+    

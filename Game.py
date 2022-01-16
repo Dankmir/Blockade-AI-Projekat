@@ -4,11 +4,17 @@ import copy
 import os
 import time
 import random
+import math
+
+sign = lambda x: 0 if x == 0 else math.copysign(1, x)
+
+def getNumpadDirection(y, x):
+    return int((sign(x) + 1) + (sign(y) + 1) * 3 + 1)
 
 class Game:
     def __init__(self):
         self.clearConsole()
-        
+
         startPositions = []
 
         print("Izaberite igraca")
@@ -165,31 +171,51 @@ class Game:
     def removeWallMove(self, x, y):
         if (x, y) in self.aiWallPlacementPositions:
             self.aiWallPlacementPositions.remove((x, y))
-    
+
     def generateMove(self, player, state):
         enemyPos = state.getEnemyPos(player)
         spawnPos = self.spawns[0:2] if player == 'X' else self.spawns[2:4]
+        enemySpawnPos = self.spawns[0:2] if player == 'O' else self.spawns[2:4]
         wallsLeft = self.states[-1].walls[0 if player == 'X' else 1]
-        wallPositions = self.checkWallPlacement(enemyPos, spawnPos)
-        for movement in self.aiMovementMoves:
+        wallPositions = set(self.checkWallPlacement(enemyPos, spawnPos)).intersection(self.aiWallPlacementPositions)
+
+        playerPos = state.getPlayerPos(player)
+
+        minPath = 9999999
+        minPawn = 0
+        moves = []
+        for pawn in [0, 1]:
+            currentPawn = playerPos[pawn]
+            p1 = state.findPath(currentPawn, (enemySpawnPos[0][0], enemySpawnPos[0][1]))
+            p2 = state.findPath(currentPawn, (enemySpawnPos[1][1], enemySpawnPos[1][1]))
+            
+            nP = min(len(p1), len(p2), minPath)
+            if nP != minPath: 
+                minPath = nP
+                minPawn = pawn
+
+            nextMove = (p1 if len(p1) < len(p2) else p2)[1]
+            m = getNumpadDirection(-(nextMove[0] - currentPawn[0]), nextMove[1] - currentPawn[1])
+            moves.append((pawn + 1, m))
+
+        moves = filter(lambda x: x[0] == minPawn + 1, moves)
+
+        for movement in moves:
             if wallsLeft[0] > 0 or wallsLeft[1] > 0:
                 if wallsLeft[1] > 0:
-                    for wallPos in self.aiWallPlacementPositions:
-                        if wallPos in wallPositions:
-                            yield (movement[0], movement[1], 'B', wallPos[0], wallPos[1])
+                    for wallPos in wallPositions:
+                        yield (movement[0], movement[1], 'B', wallPos[0], wallPos[1])
                 else:
                     yield (movement[0], movement[1], 'B', 1, 1)
                 if wallsLeft[0] > 0:
-                    for wallPos in self.aiWallPlacementPositions:
-                        if wallPos in wallPositions:
-                            yield (movement[0], movement[1], 'G', wallPos[0], wallPos[1])
+                    for wallPos in wallPositions:
+                        yield (movement[0], movement[1], 'G', wallPos[0], wallPos[1])
                 else:
                     yield (movement[0], movement[1], 'G', 1, 1)
             else:
                 yield (movement[0], movement[1], 'B', 1, 1)
 
     def checkWallPlacement(self, enemyPos, spawnPos):
-
         enemy1X = enemyPos[0][0]
         enemy1Y = enemyPos[0][1]
         enemy2X = enemyPos[1][0]
@@ -217,10 +243,11 @@ class Game:
         if depth == 0 or self.isEnd():
             return self.evaluate(copy.deepcopy(state), 'X' if maximizingPlayer else 'O')
 
+        out_state = None
+
         if maximizingPlayer:
-            print("Started max")
             maxEval = -99999999
-            for move in self.generateMove('X', state):   
+            for move in self.generateMove('X', state):
                 new_state = copy.deepcopy(state)
                 if new_state.playTurn('X', move[0], move[1], 2, move[2], move[3], move[4]):            
                     eval = self.minimax(new_state, depth - 1, alpha, beta, False)
@@ -229,10 +256,9 @@ class Game:
                         out_state = copy.deepcopy(new_state)
                     alpha = max(alpha, eval[0])
                     if beta <= alpha:
-                        break;
-            return (maxEval, out_state)
+                        break
+            return (-9999999 if out_state is None else maxEval, out_state or state)
         else:
-            print("Started min")
             minEval = 99999999
             for move in self.generateMove('O', state):   
                 new_state = copy.deepcopy(state)
@@ -243,9 +269,23 @@ class Game:
                         out_state = copy.deepcopy(new_state)
                     beta = min(beta, eval[0])
                     if beta <= alpha:
-                        break;
-            return (minEval, out_state)
+                        break
+            return (9999999 if out_state is None else minEval, out_state or state)
 
     def evaluate(self, state, player):
-        eval = random.randrange(-100, 100)
-        return (eval, state)
+        enemies = state.getEnemyPos(player)
+        enemyGoals = self.spawns[0:2] if player == 'O' else self.spawns[2:4]
+
+        score = 0
+        for e in enemies:
+            for es in enemyGoals:
+                score += len(state.findPath(e, (es[0], es[1])))
+
+        players = state.getPlayerPos(player)
+        goals = self.spawns[0:2] if player == 'X' else self.spawns[2:4]
+        for e in players:
+            for es in goals:
+                score -= len(state.findPath(e, (es[0], es[1])))
+
+        print(score)
+        return (score, state)
