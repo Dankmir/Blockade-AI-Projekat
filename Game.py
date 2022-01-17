@@ -279,7 +279,7 @@ class Game:
             len(state.findPath(enemies[0], (enemyGoals[1][0], enemyGoals[1][1]))),
             len(state.findPath(enemies[0], (enemyGoals[0][0], enemyGoals[0][1]))), 
             len(state.findPath(enemies[1], (enemyGoals[1][0], enemyGoals[1][1]))), 
-            len(state.findPath(enemies[1], (enemyGoals[0][0], enemyGoals[0][1])))) * 5
+            len(state.findPath(enemies[1], (enemyGoals[0][0], enemyGoals[0][1]))))
 
         players = state.getPlayerPos(player)
         goals = self.spawns[0:2] if player == 'X' else self.spawns[2:4]
