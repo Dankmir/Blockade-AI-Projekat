@@ -89,7 +89,7 @@ class Game:
             
             print(f'Minimax started...')
             start   = time.time()
-            result  = self.minimax(self.states[-1], 2, -99999999, 99999999, self.playerSymbol == 'O')
+            result  = self.minimax(self.states[-1], 3, -99999999, 99999999, self.playerSymbol == 'O')
             end     = time.time()
             print(f'Minimax finished in {end - start} seconds with result {result[0]}.')
 
@@ -198,8 +198,6 @@ class Game:
             m = getNumpadDirection(-(nextMove[0] - currentPawn[0]), nextMove[1] - currentPawn[1])
             moves.append((pawn + 1, m))
 
-        moves = filter(lambda x: x[0] == minPawn + 1, moves)
-
         for movement in moves:
             if wallsLeft[0] > 0 or wallsLeft[1] > 0:
                 if wallsLeft[1] > 0:
@@ -251,8 +249,8 @@ class Game:
                 new_state = copy.deepcopy(state)
                 if new_state.playTurn('X', move[0], move[1], 2, move[2], move[3], move[4]):            
                     eval = self.minimax(new_state, depth - 1, alpha, beta, False)
-                    maxEval = max(maxEval, eval[0])
-                    if maxEval == eval[0]:
+                    if maxEval < eval[0] or (maxEval == eval[0] and random.randint(0, 100) < 50):
+                        maxEval = eval[0]
                         out_state = copy.deepcopy(new_state)
                     alpha = max(alpha, eval[0])
                     if beta <= alpha:
@@ -264,8 +262,8 @@ class Game:
                 new_state = copy.deepcopy(state)
                 if new_state.playTurn('O', move[0], move[1], 2, move[2], move[3], move[4]):            
                     eval = self.minimax(new_state, depth - 1, alpha, beta, True)
-                    minEval = min(minEval, eval[0])
-                    if minEval == eval[0]:
+                    if minEval > eval[0] or (minEval == eval[0] and random.randint(0, 100) < 50):
+                        minEval = eval[0]
                         out_state = copy.deepcopy(new_state)
                     beta = min(beta, eval[0])
                     if beta <= alpha:
@@ -277,15 +275,18 @@ class Game:
         enemyGoals = self.spawns[0:2] if player == 'O' else self.spawns[2:4]
 
         score = 0
-        for e in enemies:
-            for es in enemyGoals:
-                score += len(state.findPath(e, (es[0], es[1])))
+        score -= min(
+            len(state.findPath(enemies[0], (enemyGoals[1][0], enemyGoals[1][1]))),
+            len(state.findPath(enemies[0], (enemyGoals[0][0], enemyGoals[0][1]))), 
+            len(state.findPath(enemies[1], (enemyGoals[1][0], enemyGoals[1][1]))), 
+            len(state.findPath(enemies[1], (enemyGoals[0][0], enemyGoals[0][1])))) * 5
 
         players = state.getPlayerPos(player)
         goals = self.spawns[0:2] if player == 'X' else self.spawns[2:4]
-        for e in players:
-            for es in goals:
-                score -= len(state.findPath(e, (es[0], es[1])))
+        score += max(
+            len(state.findPath(players[0], (goals[1][0], goals[1][1]))),
+            len(state.findPath(players[0], (goals[0][0], goals[0][1]))), 
+            len(state.findPath(players[1], (goals[1][0], goals[1][1]))), 
+            len(state.findPath(players[1], (goals[0][0], goals[0][1]))))
 
-        print(score)
         return (score, state)

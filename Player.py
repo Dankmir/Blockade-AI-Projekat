@@ -58,6 +58,11 @@ class Player:
                     i = distance
                 else:
                     return False
+            
+            if distance == 2:
+                for n in self.board.startNodes[0:2] if self.symbol == 'O' else self.board.startNodes[2:4]:
+                    if n[0] == tempX and n[1] == tempY:
+                        return False
 
         if self.validateMove(tempX, tempY, boardWidth, boardHeight):
             self.x = tempX  

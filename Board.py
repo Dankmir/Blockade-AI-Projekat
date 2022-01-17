@@ -108,8 +108,8 @@ class Board:
             return '   '
 
     def movePlayer(self, dir, distance, player):
-        moveWithTwo = False
         isNotDiagonal = dir not in [1, 3, 7, 9]
+        moveWithTwo = False
 
         if isNotDiagonal:
             moveWithTwo = self.players[player].move(dir, 2, self.width, self.height)
