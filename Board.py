@@ -307,6 +307,56 @@ class Board:
                 explored.append(node)
         return [start, start]
 
+    def a_star(self, start, end):
+        if end == start:
+            return [start, start]
+            
+        found_end = False
+        open_set = set()
+        open_set.add(start)
+        closed_set = set()
+        g = {}
+        prev_nodes = {}
+        g[start] = 0
+        prev_nodes[start] = None
+
+        while len(open_set) > 0 and (not found_end):
+            node = None
+            for next_node in open_set:
+                nextDistance =  abs(end[0] - next_node[0]) + abs(end[1] - next_node[1])
+                if node is None or g[next_node] + nextDistance < g[node] + abs(end[0] - node[0]) + abs(end[1] - node[1]):
+                    node = next_node
+            if node == end:
+                found_end = True
+                break   
+
+            for m in self.graph[node]:
+                cost = abs(end[0] - m[0]) + abs(end[1] - m[1])
+                if m not in open_set and m not in closed_set:
+                    open_set.add(m)
+                    prev_nodes[m] = node
+                    g[m] = g[node] + cost
+                else:
+                    if g[m] > g[node] + cost:
+                        g[m] = g[node] + cost
+                        prev_nodes[m] = node
+                        if m in closed_set:
+                            closed_set.remove(m)
+                            open_set.add(m)
+            open_set.remove(node)
+            closed_set.add(node)
+        
+        path = []
+        if found_end:
+            prev = end
+            while prev_nodes[prev] is not None:
+                path.append(prev)
+                prev = prev_nodes[prev]
+            path.append(start)
+            path.reverse()
+    
+        return path
+
     def getWallsLeft(self):
         print(f'X walls: {Fore.CYAN}{self.walls[0][1]}{Style.RESET_ALL}, {Fore.GREEN}{self.walls[0][0]}{Style.RESET_ALL}')
         print(f'O walls: {Fore.CYAN}{self.walls[1][1]}{Style.RESET_ALL}, {Fore.GREEN}{self.walls[1][0]}{Style.RESET_ALL}')
@@ -321,5 +371,3 @@ class Board:
 
     def getPlayerPos(self, player):
         return self.getEnemyPos('O' if player == 'X' else 'X')
-
-    
