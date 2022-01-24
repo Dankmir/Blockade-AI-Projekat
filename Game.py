@@ -89,7 +89,7 @@ class Game:
             wallsLeft = self.states[-1].walls[0 if self.turn == 'X' else 1]
             print(f'Minimax started...')
             start   = time.time()
-            depth = 2 if wallsLeft[0] > 0 or wallsLeft[1] > 0 else 4
+            depth = 3 if wallsLeft[0] > 0 or wallsLeft[1] > 0 else 4
             result  = self.minimax(self.states[-1], depth, -99999999, 99999999, self.playerSymbol == 'O')
             end     = time.time()
             print(f'Minimax finished in {end - start} seconds with result {result[0]}.')
@@ -163,16 +163,11 @@ class Game:
         wallPositions   = set(self.checkWallPlacement(enemyPos, spawnPos)).intersection(self.aiWallPlacementPositions)
         playerPos       = state.getPlayerPos(player)
 
-        minPath = 9999999
         moves = []
         for pawn in [0, 1]:
             currentPawn = playerPos[pawn]
             p1 = state.a_star(currentPawn, (enemySpawnPos[0][0], enemySpawnPos[0][1]))
             p2 = state.a_star(currentPawn, (enemySpawnPos[1][0], enemySpawnPos[1][1]))
-            
-            nP = min(len(p1), len(p2), minPath)
-            if nP != minPath: 
-                minPath = nP
 
             nextMove = (p1 if len(p1) <= len(p2) else p2)[1]
             m = getNumpadDirection(-(nextMove[0] - currentPawn[0]), nextMove[1] - currentPawn[1])
@@ -262,18 +257,18 @@ class Game:
         enemyGoals = self.spawns[0:2] if player == 'O' else self.spawns[2:4]
 
         score = 0
-        score -= max(
-            len(state.a_star(enemies[0], (enemyGoals[1][0], enemyGoals[1][1]))),
+        score -= min(
             len(state.a_star(enemies[0], (enemyGoals[0][0], enemyGoals[0][1]))), 
-            len(state.a_star(enemies[1], (enemyGoals[1][0], enemyGoals[1][1]))), 
-            len(state.a_star(enemies[1], (enemyGoals[0][0], enemyGoals[0][1]))))
+            len(state.a_star(enemies[0], (enemyGoals[1][0], enemyGoals[1][1]))),
+            len(state.a_star(enemies[1], (enemyGoals[0][0], enemyGoals[0][1]))),
+            len(state.a_star(enemies[1], (enemyGoals[1][0], enemyGoals[1][1])))) 
 
         players = state.getPlayerPos(player)
         goals = self.spawns[0:2] if player == 'X' else self.spawns[2:4]
-        score += min(
-            len(state.a_star(players[0], (goals[1][0], goals[1][1]))),
+        score += max(
             len(state.a_star(players[0], (goals[0][0], goals[0][1]))), 
-            len(state.a_star(players[1], (goals[1][0], goals[1][1]))), 
-            len(state.a_star(players[1], (goals[0][0], goals[0][1]))))
+            len(state.a_star(players[0], (goals[1][0], goals[1][1]))),
+            len(state.a_star(players[1], (goals[0][0], goals[0][1]))),
+            len(state.a_star(players[1], (goals[1][0], goals[1][1])))) 
 
         return (score, state)
